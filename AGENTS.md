@@ -37,9 +37,9 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 ---
 
-### SYSTEM ARCHITECT (PENDING ACTIVATION)
-**Status:** Not yet activated  
-**Planned Activation:** Phase 0  
+### SYSTEM ARCHITECT (ACTIVE)
+**Status:** Active  
+**Activated:** 2026-09-22  
 **Responsibilities:**
 - Architecture design
 - Module boundaries
@@ -57,9 +57,9 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 ---
 
-### DOCUMENTATION / CONTEXT ENGINEER (PENDING ACTIVATION)
-**Status:** Not yet activated  
-**Planned Activation:** Phase 0  
+### DOCUMENTATION / CONTEXT ENGINEER (ACTIVE)
+**Status:** Active  
+**Activated:** 2026-09-22  
 **Responsibilities:**
 - Project memory maintenance
 - Context file creation
@@ -197,6 +197,8 @@ Before activating any specialist agent, the MASTER must evaluate:
 | Agent | Activation Date | Phase | Reason |
 |-------|----------------|-------|--------|
 | MASTER / CTO | 2026-09-22 | Phase 0 | Project initialization |
+| System Architect | 2026-09-22 | Phase 0 | Architectural documentation |
+| Documentation / Context Engineer | 2026-09-22 | Phase 0 | Project context documentation |
 
 ---
 
