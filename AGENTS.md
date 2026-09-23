@@ -18,7 +18,7 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Active Agents (Phase 2)
+## Current Standing Active Agents (Post Phase-2 Checkpoint)
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -83,9 +83,10 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 The following agents represent the complete long-term team structure.  
 **They will be activated progressively according to actual development needs.**
 
-### DATABASE ENGINEER (ACTIVE)
-**Status:** Active  
+### DATABASE ENGINEER (ACTIVE — Phase-2 engagement closed)
+**Status:** Active (standing role); Phase-2 schema extension engagement closed 2026-09-23  
 **Activated:** 2026-09-22  
+**Phase-2 Engagement:** CLOSED — migration 002 delivered; re-activate only when further schema work is authorized  
 **Responsibilities:**
 - Database schema design
 - Migration file creation
@@ -117,11 +118,12 @@ The following agents represent the complete long-term team structure.
 
 ---
 
-### PHASE 2 AGENTS (ACTIVE)
+### PHASE 2 AGENTS (DEACTIVATED after checkpoint)
 
-#### BLOCKCHAIN ENGINEER (ACTIVE)
-**Status:** Active  
+#### BLOCKCHAIN ENGINEER (DEACTIVATED)
+**Status:** Deactivated — 2026-09-23 (post Phase-2 checkpoint)  
 **Activated:** 2026-09-23  
+**Deactivated:** 2026-09-23  
 **Responsibilities:**
 - Blockchain adapter interface definition
 - EthereumAdapter implementation
@@ -138,9 +140,10 @@ The following agents represent the complete long-term team structure.
 
 ---
 
-#### GRAPH / INTELLIGENCE ENGINEER (ACTIVE)
-**Status:** Active  
+#### GRAPH / INTELLIGENCE ENGINEER (DEACTIVATED)
+**Status:** Deactivated — 2026-09-23 (post Phase-2 checkpoint)  
 **Activated:** 2026-09-23  
+**Deactivated:** 2026-09-23  
 **Responsibilities:**
 - Canonical graph model (nodes/edges, frontend-independent)
 - Deterministic bounded multi-hop tracing (BFS)
