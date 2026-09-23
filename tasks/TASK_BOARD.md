@@ -1,11 +1,46 @@
 # LedgerLens Task Board
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGE 1: DATABASE FOUNDATION)
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGE 3: ENTITY INTELLIGENCE + VASP ATTRIBUTION)
 
 ---
 
-## Active Tasks (Phase 4 — Stage 1)
+## Active Tasks (Phase 4 — Stage 2)
+
+### TASK-P4-002: Pattern Detection Engine
+**Owner:** GRAPH / INTELLIGENCE ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Started:** 2026-09-23  
+**Completed:** 2026-09-23  
+**Deliverables:**
+- [x] `backend/app/services/patterns/__init__.py`
+- [x] `backend/app/services/patterns/models.py` (PatternFinding, PatternType enums, evidence contracts)
+- [x] `backend/app/services/patterns/detectors.py` (all 7 deterministic detectors)
+- [x] `backend/app/services/patterns/engine.py` (PatternEngine orchestrator + persistence)
+- [x] `backend/tests/test_patterns.py` (positive, negative, edge, threshold, multi-pattern tests)
+- [x] Full backend pytest suite passes (0 regressions)
+
+---
+
+## Active Tasks (Phase 4 — Stage 3)
+
+### TASK-P4-003: Entity Intelligence and VASP Attribution
+**Owner:** VASP / ENTITY INTELLIGENCE ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Started:** 2026-09-23  
+**Completed:** 2026-09-23  
+**Deliverables:**
+- [x] `backend/app/services/entity/__init__.py`
+- [x] `backend/app/services/entity/address_registry.py`
+- [x] `backend/app/services/entity/attribution_engine.py`
+- [x] `backend/tests/test_entity_services.py` (unit tests for address registry and attribution engine)
+- [x] Full backend pytest suite passes (0 regressions)
+
+---
+
+## Completed Tasks (Phase 4 — Stage 1)
 
 ### TASK-P4-001: Intelligence Schema & Migration 003
 **Owner:** DATABASE ENGINEER  

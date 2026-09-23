@@ -1,30 +1,34 @@
 # LedgerLens Project Status
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGE 1: DATABASE FOUNDATION)  
-**Phase Status:** IN PROGRESS
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-3 COMPLETE)  
+**Phase Status:** IN PROGRESS (Stage 4 Not Started)
 
 ---
 
-## Current Phase: PHASE 4 — INTELLIGENCE LAYER (STAGE 1: DATABASE FOUNDATION)
+## Current Phase: PHASE 4 — INTELLIGENCE LAYER (STAGE 3: ENTITY INTELLIGENCE + VASP ATTRIBUTION) - COMPLETE ✅
 
-**Objective:** Build database foundation for the intelligence layer: Migration 003 (`entities`, `entity_addresses`, `patterns`, `vasp_attributions`, `risk_scores`), SQLAlchemy models, and entity seed catalog.
+**Objective:** Implement the Entity Intelligence and VASP Attribution layer defined in the approved Phase 4 architecture.
 
 **Start Date:** 2026-09-23  
+**Completion Date:** 2026-09-23  
 **Authorization:** Explicit from MASTER / CTO  
-**Active Agents:**
+**Active Agents (during stage):** 
 - MASTER / CTO
-- Database Engineer (activated for Phase 4 Stage 1)
+- VASP / Entity Intelligence Engineer (activated for Phase 4 Stage 3, now deactivated)
 
-### Phase 4 Stage 1 Goals (Database Foundation)
+### Phase 4 Stage 3 Goals (Entity Intelligence + VASP Attribution) - ALL COMPLETED ✅
 
-- [x] Migration 003: `003_phase4_intelligence.sql`
-- [x] Rollback: `003_rollback.sql`
-- [x] Seed catalog: `database/seeds/entities_seed.json`
-- [x] SQLAlchemy models in `backend/app/db/models.py`
-- [x] Schema and model unit tests in `backend/tests/test_intelligence_models.py`
-- [x] Verification with pytest regression suite (46/46 passed)
-- [x] Stage-1 Checkpoint ready
+- [x] Entity lookup service implemented (`backend/app/services/entity/`)
+- [x] Address registry service implemented (`backend/app/services/entity/address_registry.py`)
+- [x] Attribution engine implemented (`backend/app/services/entity/attribution_engine.py`)
+- [x] DIRECT/SUPPORTED/INFERRED/UNKNOWN provenance levels enforced
+- [x] Provenance and evidence stored for every attribution
+- [x] Seed catalog validated and loaded
+- [x] No risk scoring implemented (belongs to Stage 4)
+- [x] No direct blockchain provider calls from attribution engine
+- [x] Comprehensive tests pass (9/9 entity service tests, 96/96 total backend tests)
+- [x] Stage-3 Checkpoint commit
 
 ---
 

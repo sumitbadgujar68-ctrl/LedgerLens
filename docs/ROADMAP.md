@@ -1,7 +1,7 @@
 # LedgerLens Development Roadmap
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 3 — INVESTIGATION UI (IN PROGRESS)  
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-3 COMPLETE, STAGE 4 NOT STARTED)  
 **Status:** Phased Development Plan
 
 ---
@@ -23,8 +23,8 @@ This roadmap defines the complete phased development plan for LedgerLens MVP, fr
 | Phase 0 | Foundation | 2-3 days | CLOSED ✅ | MASTER, Architect, Documentation |
 | Phase 1 | Case Foundation | 1 week | CLOSED ✅ | + Database, Backend |
 | Phase 2 | Blockchain Foundation | 2 weeks | CLOSED ✅ | + Blockchain, Graph |
-| Phase 3 | Investigation UI | 2 weeks | IN PROGRESS | + Frontend, QA |
-| Phase 4 | Intelligence | 2 weeks | Not Started | + VASP, Risk |
+| Phase 3 | Investigation UI | 2 weeks | CLOSED ✅ | + Frontend, QA |
+| Phase 4 | Intelligence | 2 weeks | Stages 1-3 COMPLETE, Stage 4 NOT STARTED | + VASP (Stage 3), Risk (Stage 4) |
 | Phase 5 | AI Copilot | 1 week | Not Started | + AI/Copilot |
 | Phase 6 | Reporting | 1 week | Not Started | Release support |
 | Phase 7 | Hardening | 1 week | Not Started | + Security |
@@ -455,7 +455,7 @@ Build investigator-facing web application with dashboard, case management, graph
 ## PHASE 4 — INTELLIGENCE
 
 **Duration:** 2 weeks  
-**Status:** Not Started  
+**Status:** Stages 1-3 COMPLETE, Stage 4 (Risk Engine) NOT STARTED  
 **Prerequisites:** Phase 3 complete, Phase 4 authorization received
 
 ### Objective
@@ -464,10 +464,10 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 
 ### New Agent Activations
 
-- VASP / Entity Intelligence Engineer (entity registry, attribution)
-- Risk Engineer (risk scoring engine)
+- VASP / Entity Intelligence Engineer (entity registry, attribution) — **ACTIVATED for Stage 3, now DEACTIVATED**
+- Risk Engineer (risk scoring engine) — **NOT YET ACTIVATED (Stage 4)**
 
-### Active Agents (Total: 11)
+### Active Agents (Total: 11, with Stage 3 agents now DEACTIVATED)
 
 - MASTER / CTO
 - System Architect
@@ -476,14 +476,21 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 - Backend Engineer (API updates)
 - Blockchain Engineer (as needed)
 - Graph Engineer (pattern detection integration)
-- Frontend Engineer (intelligence UI)
+- Frontend Engineer (intelligence UI) — **NOT YET ACTIVATED (Stage 4)**
 - QA Engineer
-- VASP / Entity Intelligence Engineer
-- Risk Engineer
+- VASP / Entity Intelligence Engineer — **ACTIVATED for Stage 3, now DEACTIVATED**
+- Risk Engineer — **NOT YET ACTIVATED (Stage 4)**
+
+### Stage Completion Status
+
+- **Stage 1 — Database Foundation:** ✅ COMPLETE (migrations 003, entities/patterns/vasp_attributions/risk_scores tables, seed catalog)
+- **Stage 2 — Pattern Detection Engine:** ✅ COMPLETE (7 deterministic detectors, persistence service, comprehensive tests)
+- **Stage 3 — Entity Intelligence + VASP Attribution:** ✅ COMPLETE (address registry, attribution engine with DIRECT/SUPPORTED/INFERRED/UNKNOWN provenance levels)
+- **Stage 4 — Explainable Risk Engine:** NOT STARTED (requires Risk Engineer activation)
 
 ### Deliverables
 
-**Pattern Engine:**
+**Pattern Engine (Stage 2 — COMPLETE):**
 - Pattern detection algorithms:
   - Peel chain detection
   - Rapid forwarding (<2 hours)
@@ -497,7 +504,7 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 - Pattern storage (database)
 - Pattern API endpoints
 
-**Entity / Address Intelligence:**
+**Entity / Address Intelligence (Stage 3 — COMPLETE):**
 - Entity registry schema
 - Entity types (exchange, vasp, mixer, bridge, protocol, scam, unknown)
 - Known entity database (curated):
@@ -509,7 +516,7 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 - Entity clustering (basic)
 - Entity API endpoints
 
-**VASP Attribution:**
+**VASP Attribution (Stage 3 — COMPLETE):**
 - VASP matcher service
 - Matching strategies:
   - Exact address match
@@ -520,7 +527,7 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 - Evidence aggregation
 - Attribution API endpoints
 
-**Risk Engine:**
+**Risk Engine (Stage 4 — NOT STARTED):**
 - Risk scoring framework
 - Risk factors:
   - Known malicious association (+25)
@@ -535,7 +542,7 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 - Risk versioning
 - Risk API endpoints
 
-**Database Schema Updates:**
+**Database Schema Updates (Stage 1 — COMPLETE):**
 - `entities` table
 - `entity_addresses` table
 - `patterns` table
@@ -544,14 +551,14 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 - `risk_factors` table
 
 **API Updates:**
-- `GET /api/v1/cases/{case_id}/patterns`
-- `GET /api/v1/entities/{entity_id}`
-- `GET /api/v1/addresses/{address}/entity`
-- `GET /api/v1/cases/{case_id}/attributions`
-- `GET /api/v1/wallets/{wallet_id}/risk`
-- `GET /api/v1/risk/{risk_id}/explanation`
+- `GET /api/v1/cases/{case_id}/patterns` (Stage 2)
+- `GET /api/v1/entities/{entity_id}` (Stage 3)
+- `GET /api/v1/addresses/{address}/entity` (Stage 3)
+- `GET /api/v1/cases/{case_id}/attributions` (Stage 3)
+- `GET /api/v1/wallets/{wallet_id}/risk` (Stage 4 — NOT STARTED)
+- `GET /api/v1/risk/{risk_id}/explanation` (Stage 4 — NOT STARTED)
 
-**Frontend Updates:**
+**Frontend Updates (Stage 4 — NOT STARTED):**
 - Pattern badges in graph visualization
 - VASP attribution display (with confidence)
 - Risk score display (with factor breakdown)
@@ -559,38 +566,31 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 - Entity detail modal
 
 **Testing:**
-- Unit tests for pattern detection
-- Unit tests for VASP matcher
-- Unit tests for risk engine
+- Unit tests for pattern detection (Stage 2 — COMPLETE)
+- Unit tests for VASP matcher (Stage 3 — COMPLETE)
+- Unit tests for risk engine (Stage 4 — NOT STARTED)
 - Integration tests for intelligence APIs
 - End-to-end intelligence workflow tests
 
 **Documentation:**
-- Pattern detection methodology
-- Entity registry structure
-- VASP attribution methodology
-- Risk scoring documentation
+- Pattern detection methodology (Stage 2)
+- Entity registry structure (Stage 3)
+- VASP attribution methodology (Stage 3)
+- Risk scoring documentation (Stage 4)
 
 ### Acceptance Criteria
 
 **Functional:**
-- [ ] System detects patterns in transaction graph
-- [ ] System identifies known entities from registry
-- [ ] System attributes destinations to VASPs with confidence
-- [ ] System calculates explainable risk scores
-- [ ] Investigator sees patterns in UI
-- [ ] Investigator sees VASP attribution with confidence
-- [ ] Investigator sees risk score with factor breakdown
-- [ ] Investigator can click factors to see evidence
+- [x] System detects patterns in transaction graph (Stage 2)
+- [x] System identifies known entities from registry (Stage 3)
+- [x] System attributes destinations to VASPs with confidence (Stage 3)
+- [ ] System calculates explainable risk scores (Stage 4)
 
 **Technical:**
-- [ ] Pattern detection working
-- [ ] Entity registry populated with demo data
-- [ ] VASP matcher working
-- [ ] Risk engine producing explainable scores
-- [ ] Confidence scores present
-- [ ] Evidence chains present
-- [ ] Tests pass
+- [x] Pattern detection working (Stage 2)
+- [x] Entity registry populated with demo data (Stage 3)
+- [x] VASP matcher working (Stage 3)
+- [ ] Risk engine producing explainable scores (Stage 4)
 
 **Quality:**
 - [ ] Explainability verified
@@ -606,11 +606,11 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 ❌ Advanced clustering algorithms  
 ❌ Real-time pattern detection  
 
-**Phase 4 is intelligence foundation.**
+**Phase 4 is intelligence foundation. Stages 1-3 complete. Stage 4 pending.**
 
 ### Phase Gate
 
-**STOP after Phase 4 verification. Await explicit Phase 5 authorization.**
+**STOP after Phase 4 Stage 4 verification. Await explicit Phase 5 authorization.**
 
 ---
 
@@ -1040,8 +1040,8 @@ Security audit, performance testing, regression testing, bug fixes, deployment p
 ## Roadmap Status
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** Phase 3 — Investigation UI (IN PROGRESS)  
-**Next Phase:** Phase 4 — Intelligence (not started)
+**Current Phase:** Phase 4 — Intelligence Layer (Stages 1-3 COMPLETE, Stage 4 NOT STARTED)  
+**Next Phase:** Phase 5 — AI Copilot
 
 **Phase 0 Completion Target:** 2026-09-24 (met 2026-09-22)  
 **MVP Completion Target:** 2026-12-01 (approximate)

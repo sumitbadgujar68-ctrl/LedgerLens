@@ -1,7 +1,7 @@
 # LedgerLens Agent Registry
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGE 1: DATABASE FOUNDATION)  
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-3 COMPLETE, STAGE 4 NOT STARTED)  
 **Previous Phase:** PHASE 3 — INVESTIGATION UI (CLOSED ✅)
 
 ## Purpose
@@ -18,7 +18,7 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Standing Active Agents (Post Phase-4 Stage 1 Checkpoint)
+## Current Standing Active Agents (Phase 4 — Stage 3 Complete)
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -38,15 +38,19 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 ---
 
-### STANDING ROLES / SPECIALISTS ON STANDBY
+### VASP / ENTITY INTELLIGENCE ENGINEER (DEACTIVATED — Phase 4 Stage 3 Complete)
+**Status:** Deactivated — 2026-09-23 (post Stage 3 checkpoint)  
+**Activated:** 2026-09-23 (Phase 4 Stage 3 — Entity Intelligence)  
+**Deactivated:** 2026-09-23  
+**Responsibilities:**
+- Entity Intelligence: `backend/app/services/entity/`
+- Address Registry: `backend/app/services/entity/address_registry.py`
+- Attribution Engine: `backend/app/services/entity/attribution_engine.py`
+- VASP attribution service
+- Unit tests for entity lookup and attribution
 
-### DATABASE ENGINEER (STANDBY — Phase 4 Stage 1 Delivered)
-**Status:** Standby; Migration 003 schema & models completed 2026-09-23  
-**Activated:** 2026-09-23  
 **Ownership:**
-- database/
-- migrations/
-- backend/app/db/models.py
+- backend/app/services/entity/
 
 ---
 
