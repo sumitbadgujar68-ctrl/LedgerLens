@@ -1,8 +1,8 @@
 # LedgerLens Architectural Decisions
 
-**Last Updated:** 2026-09-22  
-**Phase:** PHASE 0 — FOUNDATION  
-**Status:** Initial Architectural Decision Records (ADRs)
+**Last Updated:** 2026-09-23  
+**Phase:** PHASE 1 — CASE FOUNDATION (CLOSED)  
+**Status:** ADRs + Phase 1 completion record
 
 ---
 
@@ -730,9 +730,61 @@ Multiple agents could work in parallel on independent tasks. But premature paral
 | 010 | JWT authentication | Accepted |
 | 011 | Progressive agent activation | Accepted |
 | 012 | Serial execution default | Accepted |
+| 013 | Phase 1 closure (Case Foundation) | Accepted |
 
 ---
 
-**Document Status:** Initial ADRs for Phase 0  
-**Approval Required:** MASTER / CTO  
-**Dependencies:** All architectural documents
+## Phase 1 Completion Record
+
+### ADR-013: Phase 1 Closure — Case Foundation
+
+**Status:** Accepted  
+**Date:** 2026-09-23  
+**Deciders:** MASTER / CTO
+
+#### Context
+
+Phase 1 (Case Foundation) required a verified database schema, migration, FastAPI case-management API, and passing tests before Phase 2 could be authorized. All structural, local, Supabase, migration, CRUD, and verification requirements have been met.
+
+#### Decision
+
+**Officially close Phase 1 as COMPLETE.**
+
+#### Verification Evidence
+
+| Layer | Result | Report |
+|---|---|---|
+| Structural / local code review | ✅ PASS | `docs/PHASE_1_VERIFICATION_REPORT.md` |
+| Local tests + migration analysis | ✅ PASS (7/7) | `docs/PHASE_1_NON_SUPABASE_VERIFICATION.md` |
+| Live Supabase migration + CRUD | ✅ PASS (100%) | `docs/PHASE_1_SUPABASE_VERIFICATION_REPORT.md` |
+| Implementation report | ✅ COMPLETE | `docs/PHASE_1_REPORT.md` |
+
+#### Supabase Verification Summary
+
+- **Project:** `qeeljebpgonsvevwsjha` (ap-northeast-1, ACTIVE_HEALTHY, PostgreSQL 17.6)
+- **Migration:** `migrations/001_initial_schema.sql` applied successfully
+- **Schema:** `investigators` and `cases` tables, indexes, FKs, CHECK constraints, triggers (`trg_generate_case_number`, `trg_cases_updated_at`), and functions verified live
+- **CRUD:** End-to-end case creation/retrieval/update verified; auto-generated `CASE-2026-000001`; `updated_at` trigger confirmed
+- **Cleanup:** Temporary test case (`99d03bfc-2e96-4a48-a086-559d256da883`) and test investigator (`00000000-0000-0000-0000-000000000001`) deleted; post-cleanup row counts: `cases` = 0, `investigators` = 0
+
+#### Security Confirmation
+
+- No secrets, real credentials, or `.env` files committed — only `backend/.env.example` placeholders
+- Temporary test data removed from live Supabase database
+
+#### Consequences
+
+- Phase 1 gate is CLOSED; Phase 2 (Blockchain Foundation) may proceed only upon explicit authorization
+- Phase-2 agents (Blockchain Engineer, Graph/Intelligence Engineer) remain **inactive** until authorization
+- Phase-1 schema is frozen — no modifications without a new decision record
+
+#### Trade-offs
+
+**Gain:** Verified foundation, clean checkpoint, auditable history  
+**Lose:** None — closure records existing completed work only
+
+---
+
+**Document Status:** Updated through Phase 1 closure  
+**Approval:** MASTER / CTO  
+**Dependencies:** All Phase 1 verification reports

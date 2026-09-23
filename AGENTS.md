@@ -1,7 +1,8 @@
 # LedgerLens Agent Registry
 
-**Last Updated:** 2026-09-22  
-**Current Phase:** PHASE 0 — FOUNDATION
+**Last Updated:** 2026-09-23  
+**Current Phase:** PHASE 1 — CASE FOUNDATION (CLOSED ✅)  
+**Next Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (awaiting explicit authorization)
 
 ## Purpose
 
@@ -17,7 +18,7 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Active Agents (Phase 0)
+## Current Active Agents (Phase 1)
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -82,15 +83,37 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 The following agents represent the complete long-term team structure.  
 **They will be activated progressively according to actual development needs.**
 
-### PHASE 1 AGENTS
+### DATABASE ENGINEER (ACTIVE)
+**Status:** Active  
+**Activated:** 2026-09-22  
+**Responsibilities:**
+- Database schema design
+- Migration file creation
+- Data model implementation
+- Database constraints and indexes
+- Database testing
 
-#### BACKEND ENGINEER
-**Planned Activation:** Phase 1  
-**Ownership:** backend/
+**Ownership:**
+- database/
+- migrations/
+- docs/DATA_MODEL.md (implementation updates)
 
-#### DATABASE ENGINEER
-**Planned Activation:** Phase 1  
-**Ownership:** database/, supabase/, migrations/
+---
+
+### BACKEND ENGINEER (ACTIVE)
+**Status:** Active  
+**Activated:** 2026-09-22  
+**Responsibilities:**
+- FastAPI application implementation
+- API endpoint implementation
+- Business logic services
+- Request/response validation
+- API testing
+
+**Ownership:**
+- backend/
+- API implementation against database schema
+- docs/API_CONTRACT.md (implementation updates)
 
 ---
 
@@ -199,6 +222,8 @@ Before activating any specialist agent, the MASTER must evaluate:
 | MASTER / CTO | 2026-09-22 | Phase 0 | Project initialization |
 | System Architect | 2026-09-22 | Phase 0 | Architectural documentation |
 | Documentation / Context Engineer | 2026-09-22 | Phase 0 | Project context documentation |
+| Database Engineer | 2026-09-22 | Phase 1 | Case foundation database schema |
+| Backend Engineer | 2026-09-22 | Phase 1 | Case foundation API implementation |
 
 ---
 
@@ -208,3 +233,5 @@ Before activating any specialist agent, the MASTER must evaluate:
 - All agent activations must be recorded here
 - Agent definitions live in `.opencode/agents/`
 - Only Phase 0 agents should be created initially
+- Phase 1 is CLOSED (2026-09-23); Phase-2 agents are NOT activated
+- Do NOT activate Blockchain/Graph/VASP/Risk/AI/Frontend agents until Phase 2 authorization
