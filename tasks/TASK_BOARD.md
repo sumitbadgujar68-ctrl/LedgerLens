@@ -1,13 +1,81 @@
 # LedgerLens Task Board
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 1 — CASE FOUNDATION (CLOSED ✅)
+**Current Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED ✅)
 
 ---
 
 ## Active Tasks
 
-_None — Phase 1 closed. Awaiting Phase 2 authorization._
+_None — Phase 2 closed. Awaiting Phase 3 authorization._
+
+---
+
+## Phase 2 Tasks (All COMPLETE)
+
+### TASK-P2-001: Phase 2 Blockchain Adapter + Canonical Model
+**Owner:** BLOCKCHAIN ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Completed:** 2026-09-23
+
+**Deliverables:**
+- [x] `backend/app/services/blockchain/` (adapter, provider, normalizer, canonical, errors)
+- [x] AlchemyProvider verified against official API docs
+- [x] Decimal-safe amounts (rawContract.value hex, never float)
+- [x] Error taxonomy + API-key masking
+- [x] Config: `alchemy_api_key`, `alchemy_network` + `.env.example`
+- [x] Blockchain unit tests: 19/19 PASS
+
+---
+
+### TASK-P2-002: Phase 2 Schema Extension
+**Owner:** DATABASE ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Completed:** 2026-09-23
+
+**Deliverables:**
+- [x] `migrations/002_phase2_tracing.sql` (trace_runs, graphs, transactions)
+- [x] `migrations/002_rollback.sql`
+- [x] SQLAlchemy models: TraceRun, GraphRecord, TransactionRecord
+- [x] Deviations from DATA_MODEL 4.4 documented (ADR-014)
+- [ ] Apply migration 002 to live Supabase — deferred to Phase 3 start
+
+---
+
+### TASK-P2-003: Phase 2 Bounded Tracing + Graph + Trace API
+**Owner:** GRAPH / INTELLIGENCE ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Completed:** 2026-09-23
+
+**Deliverables:**
+- [x] `backend/app/services/graph/` (CanonicalGraph, TraceConfig)
+- [x] `backend/app/services/tracing/` (bounded BFS tracer + TraceService)
+- [x] `backend/app/api/v1/traces.py` (POST/GET/list case-linked endpoints)
+- [x] `backend/app/models/trace_schemas.py`
+- [x] Graph/tracer unit tests + trace API tests
+- [x] Full suite: 41/41 PASS
+
+---
+
+### TASK-P2-004: Phase 2 Integration Verification + Gate
+**Owner:** MASTER / CTO  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Completed:** 2026-09-23
+
+**Verification Checklist:**
+- [x] Canonical contract exports (`TransferQuery`, `TransferFetchResult`)
+- [x] Migration 002 + rollback present, models aligned
+- [x] Routes registered (`/api/v1/cases/{id}/traces` POST/GET/GET list)
+- [x] Full test suite 41/41 PASS
+- [x] `py_compile` clean on all edited files
+- [x] No `.env` or secrets committed
+- [x] Scope boundary respected (no VASP/risk/AI/UI/cross-chain)
+- [x] Status docs updated (STATUS, TASK_BOARD, DECISIONS ADR-014/015, AGENTS)
+- [x] Git checkpoint commit created
 
 ---
 
@@ -217,18 +285,20 @@ _None_
 
 ## Pending / Future Tasks
 
-_Phase 2 tasks will be created upon explicit Phase 2 authorization._
+_Phase 3 tasks will be created upon explicit Phase 3 authorization.  
+First Phase-3 task: apply migration `002_phase2_tracing.sql` to live Supabase._
 
 ---
 
 ## Notes
 
 - **Phase 1 is officially CLOSED (2026-09-23)**
-- All structural, local, Supabase, migration, CRUD, and verification requirements passed
-- Temporary Supabase test data removed (0 rows post-cleanup)
+- **Phase 2 is officially CLOSED (2026-09-23)**
+- Phase-2 local suite: 41/41 tests PASS
 - No secrets or temporary environment files committed
-- Phase 2 NOT authorized yet
-- Do NOT activate Blockchain / Graph / VASP / Risk / AI / Frontend agents until Phase 2 authorization
+- Migration 002 file-complete but not yet applied to live Supabase (deferred to Phase 3 start)
+- Phase 3 NOT authorized yet
+- Do NOT activate Frontend / QA / VASP / Risk / AI agents until Phase 3 authorization
 
 ---
 
@@ -243,6 +313,19 @@ _Phase 2 tasks will be created upon explicit Phase 2 authorization._
 **Git Checkpoint:** ✅ COMPLETE  
 
 **PHASE 1: CLOSED ✅**
+
+---
+
+## Phase 2 Status
+
+**Blockchain Adapter + Canonical Model:** ✅ COMPLETE (19 blockchain tests)  
+**Schema Extension (migration 002):** ✅ COMPLETE (file) / ⏳ live Supabase deferred  
+**Tracing + Graph + Trace API:** ✅ COMPLETE  
+**Integration Verification:** ✅ COMPLETE  
+**Documentation Updates:** ✅ COMPLETE  
+**Git Checkpoint:** ✅ COMPLETE  
+
+**PHASE 2: CLOSED ✅**
 
 ---
 

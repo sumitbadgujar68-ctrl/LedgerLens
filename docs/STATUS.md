@@ -1,81 +1,126 @@
 # LedgerLens Project Status
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 1 — CASE FOUNDATION  
+**Current Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION  
 **Phase Status:** CLOSED ✅
 
 ---
 
-## Current Phase: PHASE 1 — CASE FOUNDATION (CLOSED)
+## Current Phase: PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED)
 
-**Objective:** Build foundational case-management layer for LedgerLens.
+**Objective:** Build provider-agnostic blockchain data layer — Ethereum adapter, canonical transactions, bounded multi-hop tracing, canonical graph, case-linked trace API.
 
-**Start Date:** 2026-09-22  
+**Start Date:** 2026-09-23  
 **Closed:** 2026-09-23
 
-### Phase 1 Goals
+### Phase 2 Goals
 
-- [x] Database Engineer activated
-- [x] Backend Engineer activated
-- [x] Database schema designed (investigators, cases)
-- [x] Migration files created
-- [x] FastAPI application structure created
-- [x] SQLAlchemy models implemented
-- [x] Pydantic schemas defined
-- [x] Case service implemented
-- [x] Case API endpoints implemented (POST, GET, PUT)
-- [x] Basic tests written
-- [x] Database migration executed (Supabase live)
-- [x] Backend tests passing (7/7)
-- [x] API documentation verified
-- [x] Data model documentation verified
-- [x] Phase 1 verification complete (structural, local, Supabase)
+- [x] MASTER review of docs + Alchemy official API docs
+- [x] Blockchain Engineer activated (`.opencode/agents/blockchain.md`)
+- [x] Graph / Intelligence Engineer activated (`.opencode/agents/graph.md`)
+- [x] Canonical transaction model (Decimal-safe, ADR-002)
+- [x] Error taxonomy (SUCCESS / PARTIAL / NO_DATA / RATE_LIMITED / PROVIDER_UNAVAILABLE / INVALID_INPUT / FAILED)
+- [x] EthereumAdapter + provider abstraction (EthereumProvider / AlchemyProvider)
+- [x] Pagination, rate-limit, provider-failure handling; API-key masking
+- [x] Config: `alchemy_api_key`, `alchemy_network` + `.env.example`
+- [x] Database Engineer engaged for migration `002_phase2_tracing.sql` (MASTER-approved)
+- [x] SQLAlchemy models: TraceRun, GraphRecord, TransactionRecord
+- [x] Canonical graph model (nodes/edges, frontend-independent)
+- [x] Deterministic bounded multi-hop BFS tracer (hop/branch/dust/asset/time filters, cycle + dedup)
+- [x] TraceService persistence (trace_run + transactions + graph)
+- [x] Trace API: POST/GET/list under `/api/v1/cases/{id}/traces`
+- [x] Blueprint integration — case lookup returns 404, not empty success
+- [x] Tests: 41/41 PASS (blockchain 19, graph, trace API, cases, schemas)
+- [x] MASTER integration verification (contracts, schema, routes, secrets, scope)
+- [x] Gate docs updated (STATUS, TASK_BOARD, DECISIONS ADR-014/015, AGENTS)
+- [x] Git checkpoint commit
 
 ### Active Work
 
-**Current Focus:** Awaiting explicit Phase 2 authorization
+**Current Focus:** Awaiting explicit Phase 3 authorization
 
-**Active Agents:**
-- MASTER / CTO (active since 2026-09-22)
-- System Architect (active since 2026-09-22)
-- Documentation / Context Engineer (active since 2026-09-22)
-- Database Engineer (active since 2026-09-22)
-- Backend Engineer (active since 2026-09-22)
+**Deactivated Agents (post-checkpoint):**
+- Blockchain Engineer — deactivated after Phase-2 checkpoint
+- Graph / Intelligence Engineer — deactivated after Phase-2 checkpoint
+- Database Engineer — Phase-2 engagement closed
 
 **In Progress:**
-- None — Phase 1 closed. STOP and await Phase 2 authorization.
+- None — Phase 2 closed. STOP and await Phase 3 authorization.
 
 ---
 
-## Phase 1 Closure Record
+## Phase 2 Closure Record
 
 **Closure Date:** 2026-09-23  
 **Closed By:** MASTER / CTO
 
 **Verification Summary:**
 
-| Verification Layer | Status | Report |
-|---|---|---|
-| Structural / local code review | ✅ PASS | `docs/PHASE_1_VERIFICATION_REPORT.md` |
-| Local tests + migration analysis | ✅ PASS (7/7 tests) | `docs/PHASE_1_NON_SUPABASE_VERIFICATION.md` |
-| Live Supabase migration + CRUD + triggers | ✅ PASS (100%) | `docs/PHASE_1_SUPABASE_VERIFICATION_REPORT.md` |
-| Overall implementation report | ✅ COMPLETE | `docs/PHASE_1_REPORT.md` |
+| Verification Layer | Status |
+|---|---|
+| Blockchain unit tests (adapter, normalizer, provider, pagination) | ✅ PASS (19) |
+| Graph + tracer tests (BFS, filters, status, cycles) | ✅ PASS |
+| Trace API + service tests (404, success, persistence) | ✅ PASS |
+| Full local suite | ✅ PASS (41/41) |
+| Syntax/import verification (`py_compile`) | ✅ PASS |
+| Route registration (`/cases/{id}/traces` POST/GET/list) | ✅ PASS |
+| Canonical contract exports (`TransferQuery`, `TransferFetchResult`) | ✅ PASS |
+| Secret hygiene (no `.env`, only `.env.example`) | ✅ PASS |
+| Scope boundary (no VASP / risk / AI / UI / cross-chain) | ✅ PASS |
 
 **Closure Checklist:**
 
-- [x] All Phase-1 implementation files present (`backend/`, `migrations/`, `database/`)
-- [x] Migration `001_initial_schema.sql` applied to live Supabase project
-- [x] Tables, indexes, constraints, triggers, functions verified live
-- [x] End-to-end CRUD verified (case number auto-generation, timestamp trigger)
-- [x] Temporary test investigator and test case deleted from Supabase (`cases` = 0 rows, `investigators` = 0 rows)
-- [x] All 7 local tests passing
-- [x] No secrets or `.env` files committed (only `.env.example` placeholders)
-- [x] Verification and completion documentation present
-- [x] Architecture boundaries respected (no Phase-2 scope creep)
+- [x] Provider-agnostic boundary preserved (Alchemy specifics isolated)
+- [x] Amounts Decimal-only (no float leakage)
+- [x] Provider failures never converted to empty success
+- [x] Migration 002 + rollback + models aligned (deviations: ADR-014)
+- [x] Case-linked traces with 404 for missing case/trace
+- [x] Async-ready `status` field on traces (inline execution this phase)
+- [x] No secrets committed
+- [x] Documentation updated (STATUS, TASK_BOARD, DECISIONS, AGENTS)
+- [x] Git checkpoint created
+
+**Known Limitations / Deferrals:**
+- Migration 002 **not yet applied to live Supabase** (deferred to Phase 3 start)
+- Trace execution is **synchronous inline** (async job queue per ADR-009 deferred to Phase 3+)
+- Etherscan secondary provider (ADR-007) remains plan-level
+- TRON/Solana/Bitcoin adapters out of Phase-2 scope
 
 ---
 
 ## Completed Work
+
+### 2026-09-23 (Phase 2 - Closure)
+
+**Phase 2 Official Closure:**
+- MASTER integration verification passed (contracts, schema, tests, secrets, scope)
+- Updated `docs/STATUS.md` — Phase 2 marked CLOSED
+- Updated `tasks/TASK_BOARD.md` — Phase 2 tasks marked COMPLETE
+- Recorded ADR-014 (schema deviations) and ADR-015 (Phase 2 closure) in `docs/DECISIONS.md`
+- Updated `AGENTS.md` — Phase-2 agents deactivated post-checkpoint
+- Created clean Git checkpoint commit for Phase 2
+
+---
+
+### 2026-09-23 (Phase 2 - Implementation)
+
+**Blockchain Engineer:**
+- Created `backend/app/services/blockchain/` (canonical, errors, normalizer, adapter, providers/alchemy, providers/base)
+- Config + `.env.example` extended for Alchemy
+- 19 blockchain unit tests passing
+
+**Database Engineer (Phase-2 extension):**
+- Migration `002_phase2_tracing.sql` + `002_rollback.sql`
+- Models: TraceRun, GraphRecord, TransactionRecord
+
+**Graph / Intelligence Engineer:**
+- `backend/app/services/graph/` — CanonicalGraph, TraceConfig
+- `backend/app/services/tracing/` — bounded BFS tracer + TraceService
+- `backend/app/api/v1/traces.py` + `backend/app/models/trace_schemas.py`
+- Wired into `app/main.py` (v0.2.0, Phase 2)
+- Full suite brought to 41/41
+
+---
 
 ### 2026-09-23 (Phase 1 - Closure)
 
@@ -194,14 +239,14 @@
 
 ## Next Steps
 
-1. **STOP and await explicit Phase 2 authorization**
-2. Do NOT activate Blockchain / Graph / VASP / Risk / AI / Frontend agents
-3. Do NOT begin Phase 2 (Blockchain Foundation) work
+1. **STOP and await explicit Phase 3 authorization**
+2. Do NOT activate Frontend / QA / VASP / Risk / AI / Security agents
+3. Do NOT begin Phase 3 (Frontend) work
 
-**Upon Phase 2 authorization:**
-- Activate Blockchain Engineer
-- Activate Graph / Intelligence Engineer
-- Begin Ethereum adapter and transaction normalization
+**Upon Phase 3 authorization:**
+- Apply migration `002_phase2_tracing.sql` to live Supabase
+- Activate Frontend Engineer + QA / Test Engineer
+- Begin investigator dashboard and graph visualization
 
 ---
 
@@ -221,6 +266,22 @@
 - [x] Git checkpoint created
 - [x] Ready for Phase 2 authorization
 
+### Phase 2 (CLOSED 2026-09-23)
+
+- [x] Provider-agnostic Ethereum adapter + Alchemy integration
+- [x] Canonical transaction model with Decimal-safe normalization
+- [x] Pagination, rate-limit, provider-failure handling
+- [x] Bounded multi-hop tracing engine (BFS, filters, cycles)
+- [x] Canonical graph model (nodes/edges)
+- [x] Case-linked trace API (POST/GET/list, 404 semantics)
+- [x] Migration 002 + models (trace_runs, graphs, transactions)
+- [x] All local tests passing (41/41)
+- [x] No secrets committed
+- [x] Scope boundary respected
+- [x] Documentation updated (STATUS, TASK_BOARD, DECISIONS, AGENTS)
+- [x] Git checkpoint created
+- [x] Ready for Phase 3 authorization
+
 ---
 
 ## Risk Register
@@ -229,25 +290,29 @@
 |------|----------|--------|------------|
 | Context file duplication | Low | Controlled | Single source of truth enforcement |
 | Premature specialist activation | Low | Controlled | Explicit activation criteria in AGENTS.md |
-| Scope creep into next phase | Low | Controlled | Phase gate enforcement + STOP before Phase 2 |
+| Scope creep into next phase | Low | Controlled | Phase gate enforcement + STOP before Phase 3 |
 | Case-number race condition (high concurrency) | Low | Documented | Acceptable for Phase 1; revisit in later phases |
+| Migration 002 not yet live on Supabase | Medium | Documented | Apply at Phase-3 start before any live DB use of trace tables |
+| Sync trace execution (not async jobs) | Medium | Documented | ADR-009 deferred to Phase 3+; status field async-ready |
+| Provider rate limits at scale | Medium | Documented | Pagination limits + error taxonomy; caching/fallback later |
 
 ---
 
 ## Decisions Pending
 
-1. Python package manager preference (pip+venv vs. poetry vs. uv) — defaulting to pip for Phase 1
+1. Python package manager preference (pip+venv vs. poetry vs. uv) — defaulting to pip for Phases 1–2
 2. Node package manager preference (npm vs. yarn vs. pnpm) — deferred to Phase 3
-3. ~~Supabase project creation timing~~ — RESOLVED (project created, migration applied in Phase 1)
+3. Live Supabase application of migration 002 — deferred to Phase 3 start
 
 ---
 
 ## Notes
 
 - Phase 1 is officially CLOSED as of 2026-09-23
-- Phase 2 is NOT started and NOT authorized
+- Phase 2 is officially CLOSED as of 2026-09-23
+- Phase 3 is NOT started and NOT authorized
 - Progressive agent activation remains the governing policy
-- Do NOT activate Phase-2 agents (Blockchain, Graph) until explicit authorization
+- Do NOT activate Phase-3 agents (Frontend, QA) until explicit authorization
 
 ---
 
@@ -282,24 +347,59 @@
 
 ---
 
-## Upcoming Phases
-
 ### PHASE 2 — BLOCKCHAIN FOUNDATION
-**Status:** Not started — awaiting explicit authorization  
-**Prerequisites:** Phase 1 complete ✅
+**Status:** CLOSED ✅  
+**Completed:** 2026-09-23
 
-**Planned Work:**
-- Ethereum adapter
-- Transaction normalization
-- Multi-hop tracing engine
-- Canonical graph model
-
-**Planned Agent Activations:**
-- Blockchain Engineer
-- Graph / Intelligence Engineer
-
-**DO NOT START PHASE 2 YET.**
+**Delivered:**
+- Provider-agnostic EthereumAdapter + AlchemyProvider
+- Canonical transaction model (Decimal-safe) + normalizer + error taxonomy
+- Bounded multi-hop BFS tracer with hop/branch/dust/asset/time filters
+- Canonical graph model (CanonicalGraph, nodes, edges)
+- Case-linked trace API (POST/GET/list under `/api/v1/cases/{id}/traces`)
+- Migration `002_phase2_tracing.sql` (trace_runs, graphs, transactions) + rollback
+- Config for Alchemy (`alchemy_api_key`, `alchemy_network`)
+- 41/41 local tests passing
+- Phase-2 checkpoint committed to Git
 
 ---
 
-_See docs/ROADMAP.md for complete phase breakdown_
+## Upcoming Phases
+
+### PHASE 3 — FRONTEND FOUNDATION
+**Status:** Not started — awaiting explicit authorization  
+**Prerequisites:** Phase 2 complete ✅
+
+**Planned Work:**
+- Apply migration 002 to live Supabase
+- Investigator dashboard (case management + trace visualization)
+- Graph visualization (react-force-graph or equivalent)
+- QA / test infrastructure
+
+**Planned Agent Activations:**
+- Frontend Engineer
+- QA / Test Engineer
+
+**DO NOT START PHASE 3 YET.**
+
+---
+
+### PHASE 4 — ENTITY & RISK INTELLIGENCE
+**Status:** Not started  
+**Planned Agents:** VASP / Entity Intelligence Engineer, Risk Engineer
+
+---
+
+### PHASE 5 — AI COPILOT
+**Status:** Not started  
+**Planned Agents:** AI / Copilot Engineer
+
+---
+
+### PHASE 6–7 — SECURITY & RELEASE
+**Status:** Not started  
+**Planned Agents:** Security Engineer, Release / Documentation Engineer
+
+---
+
+**See docs/ROADMAP.md for complete phase breakdown**

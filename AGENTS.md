@@ -1,8 +1,8 @@
 # LedgerLens Agent Registry
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 1 — CASE FOUNDATION (CLOSED ✅)  
-**Next Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (awaiting explicit authorization)
+**Current Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED ✅)  
+**Previous Phase:** PHASE 1 — CASE FOUNDATION (CLOSED ✅)
 
 ## Purpose
 
@@ -18,7 +18,7 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Active Agents (Phase 1)
+## Current Active Agents (Phase 2)
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -117,15 +117,44 @@ The following agents represent the complete long-term team structure.
 
 ---
 
-### PHASE 2 AGENTS
+### PHASE 2 AGENTS (ACTIVE)
 
-#### BLOCKCHAIN ENGINEER
-**Planned Activation:** Phase 2  
-**Ownership:** services/blockchain/, services/tracing/
+#### BLOCKCHAIN ENGINEER (ACTIVE)
+**Status:** Active  
+**Activated:** 2026-09-23  
+**Responsibilities:**
+- Blockchain adapter interface definition
+- EthereumAdapter implementation
+- Provider abstraction (EthereumProvider)
+- Alchemy provider implementation (verified against official API docs)
+- Canonical transaction model
+- Provider response normalization (Decimal-safe amounts)
+- Pagination, rate-limit, and provider failure handling
+- Provider/normalization unit tests
 
-#### GRAPH / INTELLIGENCE ENGINEER
-**Planned Activation:** Phase 2  
-**Ownership:** services/graph/, services/intelligence/
+**Ownership:**
+- backend/app/services/blockchain/
+- Canonical transaction contract (consumed by Graph Engineer)
+
+---
+
+#### GRAPH / INTELLIGENCE ENGINEER (ACTIVE)
+**Status:** Active  
+**Activated:** 2026-09-23  
+**Responsibilities:**
+- Canonical graph model (nodes/edges, frontend-independent)
+- Deterministic bounded multi-hop tracing (BFS)
+- Hop/branch/dust/amount filters, cycle + dedup handling
+- Case ↔ trace integration (references Phase-1 Case model)
+- Trace API (POST/GET cases/{id}/traces)
+- Trace/graph unit tests
+
+**Ownership:**
+- backend/app/services/graph/
+- backend/app/services/tracing/
+- backend/app/api/v1/traces.py (Phase-2 endpoints, contract approved by MASTER)
+
+**Depends on:** Blockchain Engineer canonical interfaces (approved by MASTER before implementation)
 
 ---
 
@@ -224,6 +253,9 @@ Before activating any specialist agent, the MASTER must evaluate:
 | Documentation / Context Engineer | 2026-09-22 | Phase 0 | Project context documentation |
 | Database Engineer | 2026-09-22 | Phase 1 | Case foundation database schema |
 | Backend Engineer | 2026-09-22 | Phase 1 | Case foundation API implementation |
+| Blockchain Engineer | 2026-09-23 | Phase 2 | Provider abstraction, EthereumAdapter, canonical model |
+| Graph / Intelligence Engineer | 2026-09-23 | Phase 2 | Bounded tracing, canonical graph, trace API |
+| Database Engineer (Phase-2 extension) | 2026-09-23 | Phase 2 | Migration 002: trace_runs, transactions, graphs |
 
 ---
 
@@ -232,6 +264,7 @@ Before activating any specialist agent, the MASTER must evaluate:
 - This registry is the single source of truth for agent team status
 - All agent activations must be recorded here
 - Agent definitions live in `.opencode/agents/`
-- Only Phase 0 agents should be created initially
-- Phase 1 is CLOSED (2026-09-23); Phase-2 agents are NOT activated
-- Do NOT activate Blockchain/Graph/VASP/Risk/AI/Frontend agents until Phase 2 authorization
+- Phase 1 is CLOSED (2026-09-23)
+- Phase 2 is CLOSED (2026-09-23) — all Phase-2 agents deactivated after checkpoint
+- Phase 3 is NOT started and NOT authorized
+- Do NOT activate Frontend / QA / VASP / Risk / AI / Security / Release agents until Phase 3 authorization

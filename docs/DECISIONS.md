@@ -1,8 +1,8 @@
 # LedgerLens Architectural Decisions
 
 **Last Updated:** 2026-09-23  
-**Phase:** PHASE 1 — CASE FOUNDATION (CLOSED)  
-**Status:** ADRs + Phase 1 completion record
+**Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED)  
+**Status:** ADRs + Phase 1 + Phase 2 completion records
 
 ---
 
@@ -731,6 +731,8 @@ Multiple agents could work in parallel on independent tasks. But premature paral
 | 011 | Progressive agent activation | Accepted |
 | 012 | Serial execution default | Accepted |
 | 013 | Phase 1 closure (Case Foundation) | Accepted |
+| 014 | Phase-2 schema deviations (DATA_MODEL 4.4) | Accepted |
+| 015 | Phase 2 closure (Blockchain Foundation) | Accepted |
 
 ---
 
@@ -785,6 +787,99 @@ Phase 1 (Case Foundation) required a verified database schema, migration, FastAP
 
 ---
 
-**Document Status:** Updated through Phase 1 closure  
+## Phase 2 Completion Record
+
+### ADR-014: Phase-2 Schema Deviations from DATA_MODEL 4.4
+
+**Status:** Accepted  
+**Date:** 2026-09-23  
+**Deciders:** MASTER / CTO, Database Engineer
+
+#### Context
+
+Phase 2 introduced `trace_runs`, `graphs`, and `transactions` tables (migration `002_phase2_tracing.sql`). Several pragmatic deviations from `docs/DATA_MODEL.md` section 4.4 were required for correct provider data representation.
+
+#### Decision
+
+Accept the following deviations as authoritative for implementation:
+
+1. **`amount NUMERIC(78, 18)`** (not `30, 8`) — full crypto precision for wei-scale integers (uint256 max needs 78 digits)
+2. **`block_number`, `block_timestamp`, gas fields nullable** — provider may omit fields (especially internal transfers)
+3. **`status` includes `unknown`** — receipt status not always available from Alchemy asset transfers
+4. **`transaction_type`** uses canonical values `transfer | contract_interaction | unknown` (aligned with ADR-002)
+5. **Unique index on** `(case_id, blockchain, transaction_hash, from_address, to_address, provider_reference)` — one Ethereum transaction can contain multiple ERC-20/ERC-721 transfer events sharing the same hash
+
+#### Rationale
+
+- Provider reality differs from conceptual data model
+- ERC multi-event transfers are common and must not collide
+- Wei precision loss (`30, 8`) would corrupt amounts
+
+#### Consequences
+
+- `docs/DATA_MODEL.md` section 4.4 is superseded by migration `002` for these fields
+- No Phase-1 tables modified
+
+---
+
+### ADR-015: Phase 2 Closure — Blockchain Foundation
+
+**Status:** Accepted  
+**Date:** 2026-09-23  
+**Deciders:** MASTER / CTO
+
+#### Context
+
+Phase 2 required a provider-agnostic Ethereum adapter (Alchemy), canonical transaction model, bounded multi-hop tracing engine, canonical graph model, case-linked trace API, migration, and passing tests before Phase 3 (Frontend) could be authorized.
+
+#### Decision
+
+**Officially close Phase 2 as COMPLETE.**
+
+#### Verification Evidence
+
+| Layer | Result |
+|---|---|
+| Blockchain unit tests (adapter, normalizer, provider, pagination, errors) | ✅ PASS (19) |
+| Graph/tracer tests (BFS, filters, branch limit, cycle, status) | ✅ PASS |
+| Trace API + service tests (404, success, persistence) | ✅ PASS |
+| Full local suite | ✅ PASS (41/41) |
+| Syntax / import verification (`py_compile`) | ✅ PASS |
+| Route registration (`/cases/{id}/traces` POST/GET/GET list) | ✅ PASS |
+| Canonical contract (`TransferQuery` / `TransferFetchResult` exports) | ✅ PASS |
+| Secret hygiene (no `.env`, only `.env.example`) | ✅ PASS |
+| Scope boundary (no VASP / risk / AI / UI / cross-chain) | ✅ PASS |
+
+#### Delivered
+
+- `backend/app/services/blockchain/` — EthereumAdapter, AlchemyProvider, normalizer, canonical model, error taxonomy
+- `backend/app/services/graph/` — CanonicalGraph, TraceConfig, nodes/edges
+- `backend/app/services/tracing/` — bounded BFS tracer + TraceService persistence
+- `backend/app/api/v1/traces.py` — POST/GET/list case-linked trace endpoints
+- `backend/app/models/trace_schemas.py` — API Pydantic schemas
+- `migrations/002_phase2_tracing.sql` + `002_rollback.sql` — trace_runs, graphs, transactions
+- Config: `alchemy_api_key`, `alchemy_network` settings
+- Tests: 41/41 local
+
+#### Known Limitations
+
+- Migration `002` is **file-complete but not yet applied to live Supabase** (apply at Phase-3 start or on demand)
+- Trace execution is **synchronous inline** (201 with completed/partial body); async job queue deferred (ADR-009 retained for Phase 3+)
+- Etherscan secondary provider not yet integrated (ADR-007 remains plan-level)
+- TRON/Solana/Bitcoin adapters not in Phase-2 scope (future phases)
+
+#### Consequences
+
+- Phase 2 gate is CLOSED; Phase 3 may proceed only upon explicit authorization
+- Do NOT activate Frontend / QA / VASP / Risk / AI agents until Phase 3 authorization
+
+#### Trade-offs
+
+**Gain:** Verified fact layer, provider-agnostic boundary, case-linked traces, clean checkpoint  
+**Lose:** Live Supabase migration for tables 002 (deferred, not blocking local correctness)
+
+---
+
+**Document Status:** Updated through Phase 2 closure  
 **Approval:** MASTER / CTO  
-**Dependencies:** All Phase 1 verification reports
+**Dependencies:** All Phase 1 verification reports, Phase-2 local test suite

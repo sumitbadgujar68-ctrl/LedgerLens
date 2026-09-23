@@ -16,4 +16,4 @@ async def test_root():
     assert response.status_code == 200
     data = response.json()
     assert data["service"] == "LedgerLens API"
-    assert data["phase"] == "Phase 1 - Case Foundation"
+    assert "Phase 2" in data["phase"]
