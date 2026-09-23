@@ -1,51 +1,86 @@
 # LedgerLens Project Status
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION  
-**Phase Status:** CLOSED ✅
+**Current Phase:** PHASE 3 — INVESTIGATION UI  
+**Phase Status:** CLOSED ✅ (2026-09-23)
 
 ---
 
-## Current Phase: PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED)
+## Current Phase: PHASE 3 — INVESTIGATION UI (CLOSED ✅)
 
-**Objective:** Build provider-agnostic blockchain data layer — Ethereum adapter, canonical transactions, bounded multi-hop tracing, canonical graph, case-linked trace API.
+**Objective:** Build investigator frontend — React + TypeScript + Tailwind, case management, fund-flow graph, transaction inspector, evidence workflow.
 
 **Start Date:** 2026-09-23  
-**Closed:** 2026-09-23
+**Verification Date:** 2026-09-23  
+**Closed Date:** 2026-09-23  
+**Gate Status:** PASS — CLOSED
 
-### Phase 2 Goals
+### Phase 3 Goals
 
-- [x] MASTER review of docs + Alchemy official API docs
-- [x] Blockchain Engineer activated (`.opencode/agents/blockchain.md`)
-- [x] Graph / Intelligence Engineer activated (`.opencode/agents/graph.md`)
-- [x] Canonical transaction model (Decimal-safe, ADR-002)
-- [x] Error taxonomy (SUCCESS / PARTIAL / NO_DATA / RATE_LIMITED / PROVIDER_UNAVAILABLE / INVALID_INPUT / FAILED)
-- [x] EthereumAdapter + provider abstraction (EthereumProvider / AlchemyProvider)
-- [x] Pagination, rate-limit, provider-failure handling; API-key masking
-- [x] Config: `alchemy_api_key`, `alchemy_network` + `.env.example`
-- [x] Database Engineer engaged for migration `002_phase2_tracing.sql` (MASTER-approved)
-- [x] SQLAlchemy models: TraceRun, GraphRecord, TransactionRecord
-- [x] Canonical graph model (nodes/edges, frontend-independent)
-- [x] Deterministic bounded multi-hop BFS tracer (hop/branch/dust/asset/time filters, cycle + dedup)
-- [x] TraceService persistence (trace_run + transactions + graph)
-- [x] Trace API: POST/GET/list under `/api/v1/cases/{id}/traces`
-- [x] Blueprint integration — case lookup returns 404, not empty success
-- [x] Tests: 41/41 PASS (blockchain 19, graph, trace API, cases, schemas)
-- [x] MASTER integration verification (contracts, schema, routes, secrets, scope)
-- [x] Gate docs updated (STATUS, TASK_BOARD, DECISIONS ADR-014/015, AGENTS)
-- [x] Git checkpoint commit
+- [x] Phase 3 UI/UX specification finalized (docs/PHASE_3_UI_UX_SPECIFICATION.md)
+- [x] Phase 3 Implementation Readiness Audit completed
+- [x] Backend compatibility verified (APIs support Phase 3 screens)
+- [x] Frontend Engineer activated & delivered
+- [x] QA / Test Engineer activated & verified
+- [x] Project setup (React 18 + TypeScript + Tailwind CSS)
+- [x] Design system implementation (forensic dark tokens, hop colors, monospace badges)
+- [x] Investigator Dashboard implemented
+- [x] Investigation Workspace implemented (Hero screen)
+- [x] Fund-Flow Graph implemented (React Flow + dagre layout)
+- [x] Transaction Detail Drawer implemented
+- [x] Wallet Detail Dossier implemented
+- [x] New Investigation flow implemented (NewCaseModal)
+- [x] Evidence / Notes & Custody Vault implemented
+- [x] Unit and component tests passing (9/9 Vitest)
+- [x] Backend tests passing (41/41 Pytest)
+- [x] Zero direct browser blockchain calls verified
+
+### Known Limitations Recorded (Phase 3)
+- Live Alchemy multi-hop requests require server-side `ALCHEMY_API_KEY` configuration.
+- Real-time VASP entity intelligence and AI risk scoring are future phase features (Phase 4 & Phase 5).
 
 ### Active Work
 
-**Current Focus:** Awaiting explicit Phase 3 authorization
+**Current Focus:** Phase 3 CLOSED. All specialist agents deactivated. Standby for Phase 4 authorization.
 
-**Deactivated Agents (post-checkpoint):**
-- Blockchain Engineer — deactivated after Phase-2 checkpoint
-- Graph / Intelligence Engineer — deactivated after Phase-2 checkpoint
-- Database Engineer — Phase-2 engagement closed
+**Active Agents:**
+- MASTER / CTO (active since 2026-09-22)
 
-**In Progress:**
-- None — Phase 2 closed. STOP and await Phase 3 authorization.
+**Deactivated Agents (post-Phase-3 checkpoint):**
+- Frontend Engineer — deactivated 2026-09-23
+- QA / Test Engineer — deactivated 2026-09-23
+
+---
+
+## Phase 3 Authorization Record
+
+**Authorization Date:** 2026-09-23  
+**Authorized By:** MASTER / CTO  
+**Specification:** docs/PHASE_3_UI_UX_SPECIFICATION.md (Final)
+
+**Implementation Stack:**
+- React 18 + TypeScript
+- Tailwind CSS
+- React Router
+- TanStack Query / React Query
+- Zustand (local state)
+- React Flow (graph)
+- Vitest + Testing Library
+
+**Phase 3 Screens:**
+1. Investigator Dashboard (/cases)
+2. New Investigation (/cases/new)
+3. Investigation Workspace (/cases/:id)
+4. Fund-Flow Graph
+5. Transaction Detail
+6. Wallet Detail
+7. Evidence / Notes
+
+**Boundary Enforcement:**
+- No VASP attribution (Phase 4+)
+- No risk scoring (Phase 4+)
+- No AI copilot (Phase 5+)
+- No cross-chain intelligence (Phase 4+)
 
 ---
 
@@ -239,14 +274,24 @@
 
 ## Next Steps
 
-1. **STOP and await explicit Phase 3 authorization**
-2. Do NOT activate Frontend / QA / VASP / Risk / AI / Security agents
-3. Do NOT begin Phase 3 (Frontend) work
+1. **Begin Phase 3 frontend implementation** per docs/PHASE_3_UI_UX_SPECIFICATION.md
+2. Follow implementation stack: React + TypeScript + Tailwind + React Flow
+3. Implement screens in priority order: Investigation Workspace → Fund-Flow Graph → Transaction/Wallet Detail → New Investigation → Dashboard → Evidence/Notes
+4. Ensure no direct blockchain calls from browser (all via FastAPI)
+5. Apply design fidelity: dark forensic aesthetic, hop taxonomy colors, monospace identifiers
+6. Label all synthetic/demo data as DEMO or SYNTHETIC
 
-**Upon Phase 3 authorization:**
-- Apply migration `002_phase2_tracing.sql` to live Supabase
-- Activate Frontend Engineer + QA / Test Engineer
-- Begin investigator dashboard and graph visualization
+**Phase 3 completion criteria:**
+- [ ] Frontend app created
+- [ ] All seven screens implemented
+- [ ] FastAPI integration working
+- [ ] No direct blockchain/provider calls from browser
+- [ ] Loading/error/empty states implemented
+- [ ] QA validation passes
+- [ ] Visual review passes
+- [ ] Git checkpoint created
+
+**STOP:** Do NOT proceed to Phase 4 automatically. Wait for explicit authorization.
 
 ---
 
@@ -310,9 +355,9 @@
 
 - Phase 1 is officially CLOSED as of 2026-09-23
 - Phase 2 is officially CLOSED as of 2026-09-23
-- Phase 3 is NOT started and NOT authorized
-- Progressive agent activation remains the governing policy
-- Do NOT activate Phase-3 agents (Frontend, QA) until explicit authorization
+- Phase 3 is officially AUTHORIZED and IN PROGRESS as of 2026-09-23
+- Progressive agent activation remains the governing policy (Frontend Engineer & QA / Test Engineer active)
+- Do NOT activate Phase-4+ agents (VASP, Risk, AI, Security) until explicit Phase 4 authorization
 
 ---
 

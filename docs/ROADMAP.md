@@ -1,7 +1,7 @@
 # LedgerLens Development Roadmap
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED ✅)  
+**Current Phase:** PHASE 3 — INVESTIGATION UI (IN PROGRESS)  
 **Status:** Phased Development Plan
 
 ---
@@ -23,7 +23,7 @@ This roadmap defines the complete phased development plan for LedgerLens MVP, fr
 | Phase 0 | Foundation | 2-3 days | CLOSED ✅ | MASTER, Architect, Documentation |
 | Phase 1 | Case Foundation | 1 week | CLOSED ✅ | + Database, Backend |
 | Phase 2 | Blockchain Foundation | 2 weeks | CLOSED ✅ | + Blockchain, Graph |
-| Phase 3 | Investigation UI | 2 weeks | Not Started (awaiting authorization) | + Frontend, QA |
+| Phase 3 | Investigation UI | 2 weeks | IN PROGRESS | + Frontend, QA |
 | Phase 4 | Intelligence | 2 weeks | Not Started | + VASP, Risk |
 | Phase 5 | AI Copilot | 1 week | Not Started | + AI/Copilot |
 | Phase 6 | Reporting | 1 week | Not Started | Release support |
@@ -328,7 +328,7 @@ Implement blockchain data access, transaction normalization, multi-hop tracing, 
 ## PHASE 3 — INVESTIGATION UI
 
 **Duration:** 2 weeks  
-**Status:** Not Started  
+**Status:** CLOSED ✅ (2026-09-23)  
 **Prerequisites:** Phase 2 complete, Phase 3 authorization received
 
 ### Objective
@@ -1040,8 +1040,8 @@ Security audit, performance testing, regression testing, bug fixes, deployment p
 ## Roadmap Status
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** Phase 2 (CLOSED ✅)  
-**Next Phase:** Phase 3 (awaiting authorization)
+**Current Phase:** Phase 3 — Investigation UI (IN PROGRESS)  
+**Next Phase:** Phase 4 — Intelligence (not started)
 
 **Phase 0 Completion Target:** 2026-09-24 (met 2026-09-22)  
 **MVP Completion Target:** 2026-12-01 (approximate)

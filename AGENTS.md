@@ -1,8 +1,8 @@
 # LedgerLens Agent Registry
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED ✅)  
-**Previous Phase:** PHASE 1 — CASE FOUNDATION (CLOSED ✅)
+**Current Phase:** PHASE 3 — INVESTIGATION UI (IN PROGRESS)  
+**Previous Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED ✅)
 
 ## Purpose
 
@@ -18,7 +18,7 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Standing Active Agents (Post Phase-2 Checkpoint)
+## Current Standing Active Agents (Post Phase-3 Checkpoint)
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -38,34 +38,67 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 ---
 
-### SYSTEM ARCHITECT (ACTIVE)
-**Status:** Active  
+### PHASE 3 AGENTS (DEACTIVATED after Phase-3 verification gate)
+
+#### FRONTEND ENGINEER (DEACTIVATED)
+**Status:** Deactivated — 2026-09-23 (post Phase-3 verification)  
+**Activated:** 2026-09-23  
+**Deactivated:** 2026-09-23  
+**Responsibilities:**
+- React 18 + TypeScript + Tailwind CSS application implementation
+- React Flow fund-flow graph visualization
+- Investigation workspace, dashboard, case creation, inspector drawers
+- TanStack Query API integration with FastAPI backend
+- Dark forensic UX aesthetic & accessibility standards
+- Client state management (Zustand)
+
+**Ownership:**
+- frontend/
+
+---
+
+#### QA / TEST ENGINEER (DEACTIVATED)
+**Status:** Deactivated — 2026-09-23 (post Phase-3 verification)  
+**Activated:** 2026-09-23  
+**Deactivated:** 2026-09-23  
+**Responsibilities:**
+- Frontend unit and integration tests (Vitest + Testing Library)
+- End-to-end user flow verification
+- API error state & boundary validation
+
+**Ownership:**
+- frontend/src/__tests__/
+- frontend/tests/
+- backend/tests/ (regression suite maintenance)
+
+---
+
+### STANDING ROLES / SPECIALISTS ON STANDBY
+
+### SYSTEM ARCHITECT (STANDBY)
+**Status:** Standby  
 **Activated:** 2026-09-22  
 **Responsibilities:**
 - Architecture design
 - Module boundaries
 - Service contracts
-- Technology decisions
 - Architectural Decision Records (ADRs)
-- Cross-module consistency
 
 **Ownership:**
 - docs/ARCHITECTURE.md
 - docs/DOMAIN_MODEL.md
-- docs/API_CONTRACT.md (initial)
-- docs/DATA_MODEL.md (initial)
+- docs/API_CONTRACT.md
+- docs/DATA_MODEL.md
 - docs/DECISIONS.md
 
 ---
 
-### DOCUMENTATION / CONTEXT ENGINEER (ACTIVE)
-**Status:** Active  
+### DOCUMENTATION / CONTEXT ENGINEER (STANDBY)
+**Status:** Standby  
 **Activated:** 2026-09-22  
 **Responsibilities:**
 - Project memory maintenance
-- Context file creation
-- Developer onboarding materials
-- Documentation standards
+- Context file updates
 
 **Ownership:**
 - README.md
@@ -78,43 +111,20 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 ---
 
-## Planned Future Agents (Not Yet Active)
-
-The following agents represent the complete long-term team structure.  
-**They will be activated progressively according to actual development needs.**
-
-### DATABASE ENGINEER (ACTIVE — Phase-2 engagement closed)
-**Status:** Active (standing role); Phase-2 schema extension engagement closed 2026-09-23  
+### DATABASE ENGINEER (STANDBY — Phase-2 engagement closed)
+**Status:** Standby; Phase-2 schema extension engagement closed 2026-09-23  
 **Activated:** 2026-09-22  
-**Phase-2 Engagement:** CLOSED — migration 002 delivered; re-activate only when further schema work is authorized  
-**Responsibilities:**
-- Database schema design
-- Migration file creation
-- Data model implementation
-- Database constraints and indexes
-- Database testing
-
 **Ownership:**
 - database/
 - migrations/
-- docs/DATA_MODEL.md (implementation updates)
 
 ---
 
-### BACKEND ENGINEER (ACTIVE)
-**Status:** Active  
+### BACKEND ENGINEER (STANDBY — Phase-1/2 delivered)
+**Status:** Standby  
 **Activated:** 2026-09-22  
-**Responsibilities:**
-- FastAPI application implementation
-- API endpoint implementation
-- Business logic services
-- Request/response validation
-- API testing
-
 **Ownership:**
 - backend/
-- API implementation against database schema
-- docs/API_CONTRACT.md (implementation updates)
 
 ---
 
@@ -124,19 +134,8 @@ The following agents represent the complete long-term team structure.
 **Status:** Deactivated — 2026-09-23 (post Phase-2 checkpoint)  
 **Activated:** 2026-09-23  
 **Deactivated:** 2026-09-23  
-**Responsibilities:**
-- Blockchain adapter interface definition
-- EthereumAdapter implementation
-- Provider abstraction (EthereumProvider)
-- Alchemy provider implementation (verified against official API docs)
-- Canonical transaction model
-- Provider response normalization (Decimal-safe amounts)
-- Pagination, rate-limit, and provider failure handling
-- Provider/normalization unit tests
-
 **Ownership:**
 - backend/app/services/blockchain/
-- Canonical transaction contract (consumed by Graph Engineer)
 
 ---
 
@@ -144,34 +143,13 @@ The following agents represent the complete long-term team structure.
 **Status:** Deactivated — 2026-09-23 (post Phase-2 checkpoint)  
 **Activated:** 2026-09-23  
 **Deactivated:** 2026-09-23  
-**Responsibilities:**
-- Canonical graph model (nodes/edges, frontend-independent)
-- Deterministic bounded multi-hop tracing (BFS)
-- Hop/branch/dust/amount filters, cycle + dedup handling
-- Case ↔ trace integration (references Phase-1 Case model)
-- Trace API (POST/GET cases/{id}/traces)
-- Trace/graph unit tests
-
 **Ownership:**
 - backend/app/services/graph/
 - backend/app/services/tracing/
-- backend/app/api/v1/traces.py (Phase-2 endpoints, contract approved by MASTER)
-
-**Depends on:** Blockchain Engineer canonical interfaces (approved by MASTER before implementation)
 
 ---
 
-### PHASE 3 AGENTS
-
-#### FRONTEND ENGINEER
-**Planned Activation:** Phase 3  
-**Ownership:** frontend/
-
-#### QA / TEST ENGINEER
-**Planned Activation:** Phase 3  
-**Ownership:** tests/
-
----
+## Planned Future Agents (Not Yet Active)
 
 ### PHASE 4 AGENTS
 
@@ -198,6 +176,10 @@ The following agents represent the complete long-term team structure.
 #### SECURITY ENGINEER
 **Planned Activation:** Phase 6-7  
 **Responsibilities:** Security review, audit, vulnerability assessment
+
+#### RELEASE / DOCUMENTATION ENGINEER
+**Planned Activation:** Phase 6-7  
+**Responsibilities:** Release notes, deployment documentation
 
 #### RELEASE / DOCUMENTATION ENGINEER
 **Planned Activation:** Phase 6-7  
@@ -259,6 +241,8 @@ Before activating any specialist agent, the MASTER must evaluate:
 | Blockchain Engineer | 2026-09-23 | Phase 2 | Provider abstraction, EthereumAdapter, canonical model |
 | Graph / Intelligence Engineer | 2026-09-23 | Phase 2 | Bounded tracing, canonical graph, trace API |
 | Database Engineer (Phase-2 extension) | 2026-09-23 | Phase 2 | Migration 002: trace_runs, transactions, graphs |
+| Frontend Engineer | 2026-09-23 | Phase 3 | Investigation UI, React Flow canvas, case management |
+| QA / Test Engineer | 2026-09-23 | Phase 3 | Component unit tests, regression suites, verification |
 
 ---
 
@@ -269,5 +253,6 @@ Before activating any specialist agent, the MASTER must evaluate:
 - Agent definitions live in `.opencode/agents/`
 - Phase 1 is CLOSED (2026-09-23)
 - Phase 2 is CLOSED (2026-09-23) — all Phase-2 agents deactivated after checkpoint
-- Phase 3 is NOT started and NOT authorized
-- Do NOT activate Frontend / QA / VASP / Risk / AI / Security / Release agents until Phase 3 authorization
+- Phase 3 is CLOSED (2026-09-23) — all Phase-3 agents deactivated after checkpoint
+- Phase 4 is NOT started and NOT authorized
+- Do NOT activate VASP / Risk / AI / Security / Release agents until explicit Phase 4 authorization

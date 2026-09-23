@@ -1,13 +1,82 @@
 # LedgerLens Task Board
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED ✅)
+**Current Phase:** PHASE 3 — INVESTIGATION UI (CLOSED ✅)
 
 ---
 
 ## Active Tasks
 
-_None — Phase 2 closed. Awaiting Phase 3 authorization._
+### TASK-P3-001: Frontend Scaffolding & Setup
+**Owner:** FRONTEND ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Started:** 2026-09-23  
+**Completed:** 2026-09-23  
+**Deliverables:**
+- [x] Vite + React 18 + TypeScript + Tailwind CSS structure
+- [x] Design token configuration (`#090B10`, `#0D1017`, `#121620`, `#161B26`, etc.)
+- [x] React Router setup (routes: `/`, `/cases`, `/cases/:caseId`, `/evidence`, `/settings`)
+- [x] TanStack Query (React Query) API client layer
+- [x] Zustand store for investigation UI state
+- [x] Base layout (Header, Nav, Status bar)
+
+---
+
+### TASK-P3-002: Hero Screen — Investigation Workspace & React Flow Graph
+**Owner:** FRONTEND ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Started:** 2026-09-23  
+**Completed:** 2026-09-23  
+**Deliverables:**
+- [x] Investigation Workspace canvas layout (`/cases/:id`)
+- [x] React Flow fund-flow canvas (`FundFlowCanvas.tsx`)
+- [x] Custom node component (`AddressNode.tsx`) with hop badge, address, metadata
+- [x] Custom edge component (`TransferEdge.tsx`) with amount, token, timestamp, tx hash
+- [x] Graph controls (zoom, pan, layout/dagre, fit view, export brief)
+- [x] Trace execution trigger and parameter controls
+
+---
+
+### TASK-P3-003: Transaction & Wallet Detail Drawers
+**Owner:** FRONTEND ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Started:** 2026-09-23  
+**Completed:** 2026-09-23  
+**Deliverables:**
+- [x] Slide-out Transaction Detail Drawer (`InspectorDrawer.tsx`)
+- [x] Slide-out Wallet Detail Dossier (`InspectorDrawer.tsx`)
+- [x] Strict data classification badges (AVAILABLE vs DERIVED/DEMO vs FUTURE)
+- [x] Monospace address & hash copy-to-clipboard utilities
+
+---
+
+### TASK-P3-004: Investigator Dashboard & Case Creation
+**Owner:** FRONTEND ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** MEDIUM  
+**Started:** 2026-09-23  
+**Completed:** 2026-09-23  
+**Deliverables:**
+- [x] Investigator Dashboard (`/cases`) with case metrics and table
+- [x] New Case Creation wizard (`NewCaseModal.tsx`) with initial seed target address
+- [x] Evidence & Notes panel in bottom dock and custody vault (`EvidenceCustody.tsx`)
+
+---
+
+### TASK-P3-005: Frontend Verification & QA Test Suite
+**Owner:** QA / TEST ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Started:** 2026-09-23  
+**Completed:** 2026-09-23  
+**Deliverables:**
+- [x] Vitest component unit tests
+- [x] API mock integration tests (TanStack query hooks)
+- [x] Store state transitions & evidence note tests
+- [x] Typecheck and build pass (tsc + vite build)
 
 ---
 
