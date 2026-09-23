@@ -40,6 +40,10 @@ class Case(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     investigator = relationship("Investigator", back_populates="cases")
+    trace_runs = relationship("TraceRun", back_populates="case", cascade="all, delete-orphan")
+    patterns = relationship("PatternRecord", back_populates="case", cascade="all, delete-orphan")
+    vasp_attributions = relationship("VaspAttributionRecord", back_populates="case", cascade="all, delete-orphan")
+    risk_scores = relationship("RiskScoreRecord", back_populates="case", cascade="all, delete-orphan")
 
 
 class TraceRun(Base):
@@ -65,8 +69,12 @@ class TraceRun(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     completed_at = Column(DateTime(timezone=True), nullable=True)
 
+    case = relationship("Case", back_populates="trace_runs")
     transactions = relationship("TransactionRecord", back_populates="trace_run", foreign_keys="TransactionRecord.trace_id")
     graph = relationship("GraphRecord", back_populates="trace_run", uselist=False, foreign_keys="GraphRecord.trace_id")
+    patterns = relationship("PatternRecord", back_populates="trace_run", cascade="all, delete-orphan")
+    vasp_attributions = relationship("VaspAttributionRecord", back_populates="trace_run", cascade="all, delete-orphan")
+    risk_scores = relationship("RiskScoreRecord", back_populates="trace_run", cascade="all, delete-orphan")
 
 
 class GraphRecord(Base):
@@ -122,3 +130,96 @@ class TransactionRecord(Base):
 
     trace_run = relationship("TraceRun", back_populates="transactions", foreign_keys=[trace_id])
 
+
+# ============================================================
+# PHASE 4: INTELLIGENCE LAYER MODELS
+# ============================================================
+
+class Entity(Base):
+    __tablename__ = "entities"
+
+    entity_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(String(255), unique=True, nullable=False, index=True)
+    entity_type = Column(String(50), nullable=False, index=True)
+    jurisdiction = Column(String(100), nullable=True)
+    website = Column(String(255), nullable=True)
+    verification_level = Column(String(50), nullable=False, default="unverified")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    addresses = relationship("EntityAddress", back_populates="entity", cascade="all, delete-orphan")
+    attributions = relationship("VaspAttributionRecord", back_populates="candidate_entity", cascade="all, delete-orphan")
+
+
+class EntityAddress(Base):
+    __tablename__ = "entity_addresses"
+
+    address_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("entities.entity_id", ondelete="CASCADE"), nullable=False, index=True)
+    blockchain = Column(String(50), nullable=False, default="ethereum")
+    address = Column(String(255), nullable=False, index=True)
+    label = Column(String(255), nullable=True)
+    category = Column(String(50), nullable=True)
+    source = Column(String(100), nullable=False)
+    source_url = Column(Text, nullable=True)
+    confidence = Column(Numeric(3, 2), nullable=False, default=1.00)
+    first_seen = Column(DateTime(timezone=True), nullable=True)
+    last_verified = Column(DateTime(timezone=True), server_default=func.now())
+    metadata_ = Column("metadata", JSONB, nullable=True, default={})
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    entity = relationship("Entity", back_populates="addresses")
+
+
+class PatternRecord(Base):
+    __tablename__ = "patterns"
+
+    pattern_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.case_id", ondelete="CASCADE"), nullable=False, index=True)
+    trace_id = Column(UUID(as_uuid=True), ForeignKey("trace_runs.trace_id", ondelete="CASCADE"), nullable=False, index=True)
+    wallet_address = Column(String(255), nullable=False, index=True)
+    pattern_type = Column(String(100), nullable=False, index=True)
+    confidence = Column(Numeric(3, 2), nullable=False, default=1.00)
+    description = Column(Text, nullable=False)
+    evidence = Column(JSONB, nullable=False)
+    metrics = Column(JSONB, nullable=True, default={})
+    detected_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    case = relationship("Case", back_populates="patterns")
+    trace_run = relationship("TraceRun", back_populates="patterns")
+
+
+class VaspAttributionRecord(Base):
+    __tablename__ = "vasp_attributions"
+
+    attribution_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.case_id", ondelete="CASCADE"), nullable=False, index=True)
+    trace_id = Column(UUID(as_uuid=True), ForeignKey("trace_runs.trace_id", ondelete="CASCADE"), nullable=False, index=True)
+    wallet_address = Column(String(255), nullable=False, index=True)
+    candidate_entity_id = Column(UUID(as_uuid=True), ForeignKey("entities.entity_id", ondelete="CASCADE"), nullable=False, index=True)
+    provenance_level = Column(String(20), nullable=False)
+    confidence = Column(Numeric(3, 2), nullable=False)
+    attribution_method = Column(String(100), nullable=False)
+    evidence = Column(JSONB, nullable=False)
+    source = Column(String(255), nullable=False)
+    attributed_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    case = relationship("Case", back_populates="vasp_attributions")
+    trace_run = relationship("TraceRun", back_populates="vasp_attributions")
+    candidate_entity = relationship("Entity", back_populates="attributions")
+
+
+class RiskScoreRecord(Base):
+    __tablename__ = "risk_scores"
+
+    risk_score_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.case_id", ondelete="CASCADE"), nullable=False, index=True)
+    trace_id = Column(UUID(as_uuid=True), ForeignKey("trace_runs.trace_id", ondelete="CASCADE"), nullable=False, index=True)
+    wallet_address = Column(String(255), nullable=False, index=True)
+    score = Column(Integer, nullable=False)
+    risk_category = Column(String(50), nullable=False, index=True)
+    scoring_version = Column(String(50), nullable=False, default="v1.0.0")
+    factors = Column(JSONB, nullable=False)
+    calculated_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    case = relationship("Case", back_populates="risk_scores")
+    trace_run = relationship("TraceRun", back_populates="risk_scores")

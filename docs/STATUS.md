@@ -1,12 +1,34 @@
 # LedgerLens Project Status
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 3 — INVESTIGATION UI  
-**Phase Status:** CLOSED ✅ (2026-09-23)
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGE 1: DATABASE FOUNDATION)  
+**Phase Status:** IN PROGRESS
 
 ---
 
-## Current Phase: PHASE 3 — INVESTIGATION UI (CLOSED ✅)
+## Current Phase: PHASE 4 — INTELLIGENCE LAYER (STAGE 1: DATABASE FOUNDATION)
+
+**Objective:** Build database foundation for the intelligence layer: Migration 003 (`entities`, `entity_addresses`, `patterns`, `vasp_attributions`, `risk_scores`), SQLAlchemy models, and entity seed catalog.
+
+**Start Date:** 2026-09-23  
+**Authorization:** Explicit from MASTER / CTO  
+**Active Agents:**
+- MASTER / CTO
+- Database Engineer (activated for Phase 4 Stage 1)
+
+### Phase 4 Stage 1 Goals (Database Foundation)
+
+- [x] Migration 003: `003_phase4_intelligence.sql`
+- [x] Rollback: `003_rollback.sql`
+- [x] Seed catalog: `database/seeds/entities_seed.json`
+- [x] SQLAlchemy models in `backend/app/db/models.py`
+- [x] Schema and model unit tests in `backend/tests/test_intelligence_models.py`
+- [x] Verification with pytest regression suite (46/46 passed)
+- [x] Stage-1 Checkpoint ready
+
+---
+
+## Previous Phase: PHASE 3 — INVESTIGATION UI (CLOSED ✅)
 
 **Objective:** Build investigator frontend — React + TypeScript + Tailwind, case management, fund-flow graph, transaction inspector, evidence workflow.
 

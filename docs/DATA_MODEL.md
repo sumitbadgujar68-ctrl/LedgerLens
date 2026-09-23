@@ -255,86 +255,123 @@ CREATE UNIQUE INDEX idx_addresses_blockchain_address_entity ON addresses(blockch
 
 ---
 
-### 4.7 patterns
+### 4.6 entities & entity_addresses (Phase 4 Migration 003)
 
-Detected suspicious patterns.
+Curated known organizations, exchanges, services, and associated blockchain addresses.
 
 ```sql
-CREATE TABLE patterns (
-    pattern_id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    case_id         UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
-    wallet_id       UUID REFERENCES wallets(wallet_id) ON DELETE CASCADE,
-    pattern_type    VARCHAR(100) NOT NULL 
-                    CHECK (pattern_type IN ('peel_chain', 'rapid_forwarding', 'high_fan_in', 
-                        'high_fan_out', 'layering', 'consolidation', 'split_and_forward', 
-                        'mixer_interaction', 'bridge_interaction')),
-    description     TEXT,
-    confidence      NUMERIC(3, 2) CHECK (confidence BETWEEN 0.0 AND 1.0),
-    evidence        JSONB NOT NULL,
-    metrics         JSONB,
-    detected_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+CREATE TABLE entities (
+    entity_id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name                VARCHAR(255) NOT NULL UNIQUE,
+    entity_type         VARCHAR(50) NOT NULL CHECK (entity_type IN (
+                        'exchange', 'vasp', 'mixer', 'bridge', 'defi_protocol', 
+                        'payment_processor', 'scam_infrastructure', 'known_contract', 'unknown')),
+    jurisdiction        VARCHAR(100),
+    website             VARCHAR(255),
+    verification_level  VARCHAR(50) NOT NULL DEFAULT 'unverified',
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_patterns_case ON patterns(case_id);
-CREATE INDEX idx_patterns_wallet ON patterns(wallet_id);
-CREATE INDEX idx_patterns_type ON patterns(pattern_type);
-CREATE INDEX idx_patterns_confidence ON patterns(confidence DESC);
+CREATE TABLE entity_addresses (
+    address_id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entity_id           UUID NOT NULL REFERENCES entities(entity_id) ON DELETE CASCADE,
+    blockchain          VARCHAR(50) NOT NULL DEFAULT 'ethereum',
+    address             VARCHAR(255) NOT NULL,
+    label               VARCHAR(255),
+    category            VARCHAR(50),
+    source              VARCHAR(100) NOT NULL,
+    source_url          TEXT,
+    confidence          NUMERIC(3, 2) NOT NULL DEFAULT 1.00 CHECK (confidence BETWEEN 0.0 AND 1.0),
+    first_seen          TIMESTAMP WITH TIME ZONE,
+    last_verified       TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    metadata            JSONB DEFAULT '{}'::jsonb,
+    created_at          TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX idx_entity_addresses_chain_addr ON entity_addresses(blockchain, address);
+CREATE INDEX idx_entity_addresses_entity ON entity_addresses(entity_id);
+CREATE INDEX idx_entity_addresses_address ON entity_addresses(address);
 ```
 
 ---
 
-### 4.8 risk_scores
+### 4.7 patterns (Phase 4 Migration 003)
 
-Explainable risk scores for wallets.
+Detected graph and temporal patterns for a specific trace run.
+
+```sql
+CREATE TABLE patterns (
+    pattern_id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    case_id             UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
+    trace_id            UUID NOT NULL REFERENCES trace_runs(trace_id) ON DELETE CASCADE,
+    wallet_address      VARCHAR(255) NOT NULL,
+    pattern_type        VARCHAR(100) NOT NULL CHECK (pattern_type IN (
+                        'rapid_forwarding', 'peel_chain', 'high_fan_out', 'high_fan_in', 
+                        'cyclic_flow', 'repeated_counterparties', 'volume_concentration')),
+    confidence          NUMERIC(3, 2) NOT NULL DEFAULT 1.00 CHECK (confidence BETWEEN 0.0 AND 1.0),
+    description         TEXT NOT NULL,
+    evidence            JSONB NOT NULL,
+    metrics             JSONB DEFAULT '{}'::jsonb,
+    detected_at         TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_patterns_trace ON patterns(trace_id);
+CREATE INDEX idx_patterns_case ON patterns(case_id);
+CREATE INDEX idx_patterns_wallet ON patterns(wallet_address);
+CREATE INDEX idx_patterns_type ON patterns(pattern_type);
+```
+
+---
+
+### 4.8 risk_scores (Phase 4 Migration 003)
+
+Explainable risk scores and itemized factor breakdowns per wallet per trace.
 
 ```sql
 CREATE TABLE risk_scores (
     risk_score_id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    wallet_id           UUID NOT NULL REFERENCES wallets(wallet_id) ON DELETE CASCADE,
     case_id             UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
+    trace_id            UUID NOT NULL REFERENCES trace_runs(trace_id) ON DELETE CASCADE,
+    wallet_address      VARCHAR(255) NOT NULL,
     score               INTEGER NOT NULL CHECK (score BETWEEN 0 AND 100),
     risk_category       VARCHAR(50) NOT NULL CHECK (risk_category IN ('low', 'medium', 'high', 'critical')),
-    scoring_version     VARCHAR(50) NOT NULL,
+    scoring_version     VARCHAR(50) NOT NULL DEFAULT 'v1.0.0',
     factors             JSONB NOT NULL,
     calculated_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_risk_scores_wallet ON risk_scores(wallet_id);
+CREATE UNIQUE INDEX idx_risk_scores_trace_wallet ON risk_scores(trace_id, wallet_address);
 CREATE INDEX idx_risk_scores_case ON risk_scores(case_id);
+CREATE INDEX idx_risk_scores_wallet ON risk_scores(wallet_address);
 CREATE INDEX idx_risk_scores_category ON risk_scores(risk_category);
-CREATE INDEX idx_risk_scores_score ON risk_scores(score DESC);
-
--- One risk score per wallet per case (overwrite on recalculation)
-CREATE UNIQUE INDEX idx_risk_scores_wallet_case ON risk_scores(wallet_id, case_id);
 ```
 
 ---
 
-### 4.9 vasp_attributions
+### 4.9 vasp_attributions (Phase 4 Migration 003)
 
-VASP/exchange attributions for wallets.
+VASP and entity attribution records with multi-signal evidence and confidence levels.
 
 ```sql
 CREATE TABLE vasp_attributions (
     attribution_id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    wallet_id           UUID NOT NULL REFERENCES wallets(wallet_id) ON DELETE CASCADE,
     case_id             UUID NOT NULL REFERENCES cases(case_id) ON DELETE CASCADE,
-    candidate_entity_id UUID NOT NULL REFERENCES entities(entity_id),
+    trace_id            UUID NOT NULL REFERENCES trace_runs(trace_id) ON DELETE CASCADE,
+    wallet_address      VARCHAR(255) NOT NULL,
+    candidate_entity_id UUID NOT NULL REFERENCES entities(entity_id) ON DELETE CASCADE,
+    provenance_level    VARCHAR(20) NOT NULL CHECK (provenance_level IN ('DIRECT', 'SUPPORTED', 'INFERRED', 'UNKNOWN')),
     confidence          NUMERIC(3, 2) NOT NULL CHECK (confidence BETWEEN 0.0 AND 1.0),
-    attribution_method  VARCHAR(100) NOT NULL 
-                        CHECK (attribution_method IN ('exact_match', 'cluster_match', 
-                            'behavioral_match', 'multi_signal')),
+    attribution_method  VARCHAR(100) NOT NULL CHECK (attribution_method IN (
+                        'registry_exact_match', 'contract_signature', 'deposit_sweep_heuristic', 'multi_signal')),
     evidence            JSONB NOT NULL,
-    source              VARCHAR(255),
+    source              VARCHAR(255) NOT NULL,
     attributed_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_vasp_attributions_wallet ON vasp_attributions(wallet_id);
+CREATE INDEX idx_vasp_attributions_trace ON vasp_attributions(trace_id);
 CREATE INDEX idx_vasp_attributions_case ON vasp_attributions(case_id);
+CREATE INDEX idx_vasp_attributions_wallet ON vasp_attributions(wallet_address);
 CREATE INDEX idx_vasp_attributions_entity ON vasp_attributions(candidate_entity_id);
-CREATE INDEX idx_vasp_attributions_confidence ON vasp_attributions(confidence DESC);
-
--- Multiple attributions per wallet allowed (multiple candidates)
 ```
 
 ---

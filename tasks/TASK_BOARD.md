@@ -1,11 +1,29 @@
 # LedgerLens Task Board
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 3 — INVESTIGATION UI (CLOSED ✅)
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGE 1: DATABASE FOUNDATION)
 
 ---
 
-## Active Tasks
+## Active Tasks (Phase 4 — Stage 1)
+
+### TASK-P4-001: Intelligence Schema & Migration 003
+**Owner:** DATABASE ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Started:** 2026-09-23  
+**Completed:** 2026-09-23  
+**Deliverables:**
+- [x] Create `migrations/003_phase4_intelligence.sql`
+- [x] Create `migrations/003_rollback.sql`
+- [x] Create seed catalog in `database/seeds/entities_seed.json`
+- [x] Add SQLAlchemy ORM models in `backend/app/db/models.py`
+- [x] Write schema & ORM relationship unit tests in `backend/tests/test_intelligence_models.py`
+- [x] Verify test suite pass (46/46 passed, 0 regressions)
+
+---
+
+## Completed Tasks (Phase 3)
 
 ### TASK-P3-001: Frontend Scaffolding & Setup
 **Owner:** FRONTEND ENGINEER  

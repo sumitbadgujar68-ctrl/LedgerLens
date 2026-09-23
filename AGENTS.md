@@ -1,8 +1,8 @@
 # LedgerLens Agent Registry
 
 **Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 3 — INVESTIGATION UI (IN PROGRESS)  
-**Previous Phase:** PHASE 2 — BLOCKCHAIN FOUNDATION (CLOSED ✅)
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGE 1: DATABASE FOUNDATION)  
+**Previous Phase:** PHASE 3 — INVESTIGATION UI (CLOSED ✅)
 
 ## Purpose
 
@@ -18,7 +18,7 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Standing Active Agents (Post Phase-3 Checkpoint)
+## Current Standing Active Agents (Post Phase-4 Stage 1 Checkpoint)
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -35,6 +35,18 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Project-wide coordination
 - AGENTS.md (this file)
 - Phase gate enforcement
+
+---
+
+### STANDING ROLES / SPECIALISTS ON STANDBY
+
+### DATABASE ENGINEER (STANDBY — Phase 4 Stage 1 Delivered)
+**Status:** Standby; Migration 003 schema & models completed 2026-09-23  
+**Activated:** 2026-09-23  
+**Ownership:**
+- database/
+- migrations/
+- backend/app/db/models.py
 
 ---
 
