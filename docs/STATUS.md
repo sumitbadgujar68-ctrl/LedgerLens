@@ -1,24 +1,45 @@
 # LedgerLens Project Status
 
 **Last Updated:** 2026-09-24  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-4 COMPLETE)  
-**Phase Status:** COMPLETE ✅
+**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — NEXT: PHASE 6 (NOT STARTED)  
+**Phase Status:** CLOSED ✅
 
 ---
 
-## Current Phase: PHASE 4 — INTELLIGENCE LAYER (STAGES 1-4 COMPLETE) - COMPLETE ✅
+## Current Phase: PHASE 5 — AI COPILOT (CLOSED ✅)
 
-**Objective:** Implement the full Intelligence Layer: Pattern Detection, Entity Intelligence, VASP Attribution, and Explainable Risk Scoring.
+**Objective:** Implement the AI Investigation Copilot with grounded answers, citations, hallucination prevention, and three approved API endpoints.
 
-**Start Date:** 2026-09-23  
-**Completion Date:** 2026-09-24  
-**Authorization:** Explicit from MASTER / CTO  
-**Active Agents (during stage):** 
+**Start Date:** 2026-09-24  
+**Closure Date:** 2026-09-24  
+**Closed By:** MASTER / CTO (explicit closure authorization)  
+**Agents (during phase):**
 - MASTER / CTO
-- VASP / Entity Intelligence Engineer (activated for Phase 4 Stage 3, now deactivated)
-- Risk Engineer (activated for Phase 4 Stage 4, now deactivated)
-- Backend Engineer (secondary for Stage 4)
-- QA / Test Engineer (verification)
+- AI / COPILOT ENGINEER (activated 2026-09-24, deactivated post-checkpoint)
+- Backend Engineer (as required for Phase 5 integration)
+- QA / TEST ENGINEER (verification)
+
+### Phase 5 Status: CLOSED ✅
+
+**Blockers identified by audit and fixed before closure:**
+- [x] HallucinationGuard rewritten with real deterministic verification (fabricated tx/entity/risk/pattern/evidence/address rejection)
+- [x] API exception mapping corrected: 404 (case not found), 422 (validation), 503 (provider not configured), 502 (provider error), 500 (unexpected)
+- [x] Dedicated Phase 5 test suite created (`backend/tests/test_copilot.py`, 74 tests, all PASS) with all 12 required acceptance categories explicit (`ACCEPTANCE_CATEGORIES` + `TestPhase5AcceptanceCategories`)
+- [x] API route contract verified against `docs/API_CONTRACT.md` §4.10 (`TestPhase5RouteContract`)
+- [x] `openai==3.19.2` added to `backend/requirements.txt`
+- [x] Provider config env-only; tests mock provider boundary (no real API key required)
+
+**Documented limitation (accepted at closure):**
+- [ ] Real-provider (OpenAI) verification — **UNVERIFIED**: no `OPENAI_API_KEY` configured (by design). Live LLM answer quality, citation-marker emission, token usage, latency, and real outage → 502 behavior remain unverified. Tests mock the provider boundary; live calls return 503 (`PROVIDER_NOT_CONFIGURED`) until a key is configured.
+
+**Final test results at closure:**
+- Phase 5 dedicated suite: 74/74 PASS (12/12 acceptance categories explicit)
+- Complete backend suite: 190/190 PASS (116 pre-existing + 74 Phase 5)
+- Frontend suite: 9/9 PASS
+- Frontend production build: PASS
+- Secrets scan: CLEAN (no keys committed; `.env` git-ignored; `.env.example` placeholder empty)
+
+**Phase 5 CLOSED ✅ via checkpoint commit. Phase 6 NOT STARTED. No frontend Copilot UI, no Phase 6 work, no real API key required for this closure.**
 
 ### Phase 4 Stage 4 Goals (Explainable Risk Engine) - ALL COMPLETED ✅
 
@@ -80,10 +101,13 @@
 
 ### Active Work
 
-**Current Focus:** Phase 4 COMPLETE. All specialist agents deactivated. Standby for Phase 5 authorization.
+**Current Focus:** Phase 5 CLOSED ✅ (2026-09-24). AI / Copilot Engineer deactivated post-checkpoint. Standby for Phase 6 authorization (NOT STARTED).
 
 **Active Agents:**
 - MASTER / CTO (active since 2026-09-22)
+
+**Deactivated Agents (post-Phase-5 checkpoint):**
+- AI / Copilot Engineer — deactivated 2026-09-24 (post Phase 5)
 
 **Deactivated Agents (post-Phase-4 checkpoint):**
 - VASP / Entity Intelligence Engineer — deactivated 2026-09-23 (post Stage 3)
@@ -441,8 +465,10 @@
 - Phase 2 is officially CLOSED as of 2026-09-23
 - Phase 3 is officially CLOSED as of 2026-09-23
 - Phase 4 is officially CLOSED as of 2026-09-24
+- Phase 5 is officially CLOSED as of 2026-09-24 — real LLM/provider behavior remains UNVERIFIED (no `OPENAI_API_KEY` configured; documented limitation)
+- Phase 6 is NOT STARTED
 - Progressive agent activation remains the governing policy
-- Do NOT activate Phase-5+ agents (AI, Security, Release) until explicit Phase 5 authorization
+- Do NOT activate Phase-6+ agents (Security, Release) until explicit Phase 6 authorization
 
 ---
 
@@ -521,13 +547,14 @@
 ---
 
 ### PHASE 5 — AI COPILOT
-**Status:** Not started  
-**Planned Agents:** AI / Copilot Engineer
+**Status:** CLOSED ✅ (2026-09-24) — implementation, 74-test suite (12/12 acceptance categories), route-contract verification, 190/190 full backend suite; Phase 6 NOT started  
+**Agents:** AI / Copilot Engineer (activated and deactivated post-checkpoint)  
+**Documented limitation:** real LLM/provider behavior UNVERIFIED (no `OPENAI_API_KEY` configured; provider mocked in tests)
 
 ---
 
 ### PHASE 6–7 — SECURITY & RELEASE
-**Status:** Not started  
+**Status:** NOT STARTED  
 **Planned Agents:** Security Engineer, Release / Documentation Engineer
 
 ---

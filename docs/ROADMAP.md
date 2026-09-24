@@ -1,7 +1,7 @@
 # LedgerLens Development Roadmap
 
-**Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-3 COMPLETE, STAGE 4 NOT STARTED)  
+**Last Updated:** 2026-09-24  
+**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — NEXT: PHASE 6 (NOT STARTED)  
 **Status:** Phased Development Plan
 
 ---
@@ -25,9 +25,9 @@ This roadmap defines the complete phased development plan for LedgerLens MVP, fr
 | Phase 2 | Blockchain Foundation | 2 weeks | CLOSED ✅ | + Blockchain, Graph |
 | Phase 3 | Investigation UI | 2 weeks | CLOSED ✅ | + Frontend, QA |
 | Phase 4 | Intelligence | 2 weeks | Stages 1-3 COMPLETE, Stage 4 NOT STARTED | + VASP (Stage 3), Risk (Stage 4) |
-| Phase 5 | AI Copilot | 1 week | Not Started | + AI/Copilot |
-| Phase 6 | Reporting | 1 week | Not Started | Release support |
-| Phase 7 | Hardening | 1 week | Not Started | + Security |
+| Phase 5 | AI Copilot | 1 week | CLOSED ✅ | + AI/Copilot |
+| Phase 6 | Reporting | 1 week | NOT STARTED | Release support |
+| Phase 7 | Hardening | 1 week | NOT STARTED | + Security |
 
 **Total Estimated Duration:** 10-11 weeks (MVP)
 
@@ -617,8 +617,9 @@ Implement pattern detection, entity/address intelligence, VASP attribution, and 
 ## PHASE 5 — AI COPILOT
 
 **Duration:** 1 week  
-**Status:** Not Started  
-**Prerequisites:** Phase 4 complete, Phase 5 authorization received
+**Status:** CLOSED ✅ (2026-09-24) — backend service, API, 74-test suite (12/12 acceptance categories), 190/190 full backend suite  
+**Documented limitation:** real LLM/provider behavior UNVERIFIED — no `OPENAI_API_KEY` configured; provider mocked in tests  
+**Prerequisites:** Phase 4 complete ✅, Phase 5 authorization received ✅
 
 ### Objective
 
@@ -1039,9 +1040,9 @@ Security audit, performance testing, regression testing, bug fixes, deployment p
 
 ## Roadmap Status
 
-**Last Updated:** 2026-09-23  
-**Current Phase:** Phase 4 — Intelligence Layer (Stages 1-3 COMPLETE, Stage 4 NOT STARTED)  
-**Next Phase:** Phase 5 — AI Copilot
+**Last Updated:** 2026-09-24  
+**Current Phase:** Phase 5 — AI Copilot (CLOSED ✅ 2026-09-24)  
+**Next Phase:** Phase 6 — Reporting (NOT STARTED)
 
 **Phase 0 Completion Target:** 2026-09-24 (met 2026-09-22)  
 **MVP Completion Target:** 2026-12-01 (approximate)

@@ -6,9 +6,9 @@
 
 ## Project Status
 
-**Current Phase:** PHASE 0 — FOUNDATION  
-**Status:** In Progress  
-**Last Updated:** 2026-09-22
+**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — Next: Phase 6 (NOT STARTED)  
+**Status:** Closed  
+**Last Updated:** 2026-09-24
 
 This is a production-oriented MVP for the Smart India Hackathon (SIH) problem statement focused on blockchain forensics and cryptocurrency fraud investigation.
 
@@ -61,7 +61,7 @@ Investigators need to quickly understand:
 
 ## Technology Stack
 
-### Phase 0 (Current)
+### Phase 0 (delivered)
 - Project architecture and documentation
 - Progressive agent team activation
 - Repository structure and standards
@@ -104,7 +104,7 @@ Investigators need to quickly understand:
 
 ## Development Phases
 
-### ✅ PHASE 0 — FOUNDATION (Current)
+### ✅ PHASE 0 — FOUNDATION (Complete)
 - Repository structure
 - Project documentation
 - Agent team establishment
@@ -135,10 +135,12 @@ Investigators need to quickly understand:
 - Risk scoring
 - Entity registry
 
-### PHASE 5 — AI COPILOT
+### PHASE 5 — AI COPILOT (Complete — backend; real-provider verification UNVERIFIED)
 - Investigator assistant
 - Natural language Q&A
 - Case summarization
+- Risk explanation with citations
+- Hallucination prevention (backend)
 
 ### PHASE 6 — REPORTING
 - Evidence capture
@@ -169,8 +171,9 @@ See **[AGENTS.md](AGENTS.md)** for the current agent team structure and activati
 
 ## Setup Instructions
 
-**Phase 0 is currently in progress.**  
-Setup instructions will be provided when implementation phases begin.
+**Phases 0–5 are complete. Phase 6 (Reporting) has NOT started.**  
+Real LLM/provider behavior remains UNVERIFIED — no `OPENAI_API_KEY` is configured (documented limitation).  
+See [docs/STATUS.md](docs/STATUS.md) for current status and [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 
 ---
 

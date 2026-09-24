@@ -1,8 +1,8 @@
 # LedgerLens Agent Registry
 
 **Last Updated:** 2026-09-24  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-4 COMPLETE)  
-**Previous Phase:** PHASE 3 — INVESTIGATION UI (CLOSED ✅)
+**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — NEXT: PHASE 6 (NOT STARTED)  
+**Previous Phase:** PHASE 4 — INTELLIGENCE LAYER (CLOSED ✅)
 
 ## Purpose
 
@@ -18,7 +18,7 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Standing Active Agents (Phase 4 — Stage 3 Complete)
+## Current Standing Active Agents (Phase 5 — CLOSED; MASTER / CTO only)
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -35,6 +35,26 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Project-wide coordination
 - AGENTS.md (this file)
 - Phase gate enforcement
+
+---
+
+### AI / COPILOT ENGINEER (DEACTIVATED — Phase 5 CLOSED)
+**Status:** Deactivated — 2026-09-24 (post Phase-5 checkpoint)  
+**Activated:** 2026-09-24  
+**Deactivated:** 2026-09-24  
+**Responsibilities:**
+- AI Copilot service: `backend/app/services/ai/`
+- Grounding, tools, context, citations, safety layers
+- Copilot orchestration engine
+- Copilot API endpoints: `backend/app/api/v1/copilot.py`
+- Copilot schemas: `backend/app/models/copilot_schemas.py`
+- Phase 5 tests: `backend/tests/test_copilot.py`
+
+**Ownership:**
+- backend/app/services/ai/
+- backend/app/api/v1/copilot.py
+- backend/app/models/copilot_schemas.py
+- backend/tests/test_copilot.py
 
 ---
 
@@ -188,16 +208,8 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 ### PHASE 5 AGENTS
 
 #### AI / COPILOT ENGINEER
-**Planned Activation:** Phase 5  
-**Ownership:** services/ai/
-
----
-
-### PHASE 5 AGENTS
-
-#### AI / COPILOT ENGINEER
-**Planned Activation:** Phase 5  
-**Ownership:** services/ai/
+**Status:** ACTIVATED 2026-09-24 (Phase 5) — DEACTIVATED 2026-09-24 (post-Phase-5 checkpoint)  
+**Ownership:** backend/app/services/ai/
 
 ---
 
@@ -275,6 +287,7 @@ Before activating any specialist agent, the MASTER must evaluate:
 | QA / Test Engineer | 2026-09-23 | Phase 3 | Component unit tests, regression suites, verification |
 | VASP / Entity Intelligence Engineer | 2026-09-23 | Phase 4 Stage 3 | Entity Intelligence, VASP Attribution |
 | Risk Engineer | 2026-09-24 | Phase 4 Stage 4 | Explainable Risk Engine |
+| AI / Copilot Engineer | 2026-09-24 | Phase 5 | AI Copilot: grounding, tools, citations, safety, API, tests |
 
 ---
 
@@ -286,5 +299,7 @@ Before activating any specialist agent, the MASTER must evaluate:
 - Phase 1 is CLOSED (2026-09-23)
 - Phase 2 is CLOSED (2026-09-23) — all Phase-2 agents deactivated after checkpoint
 - Phase 3 is CLOSED (2026-09-23) — all Phase-3 agents deactivated after checkpoint
-- Phase 4 is COMPLETE (2026-09-24) — all Phase-4 agents deactivated after checkpoint
-- Do NOT activate AI / Security / Release agents until explicit Phase 5 authorization
+- Phase 4 is CLOSED (2026-09-24) — all Phase-4 agents deactivated after checkpoint
+- Phase 5 is CLOSED (2026-09-24) — AI / Copilot Engineer deactivated after checkpoint
+- Documented limitation: real LLM/provider behavior UNVERIFIED (no `OPENAI_API_KEY` configured)
+- Phase 6 is NOT STARTED — do NOT activate Security / Release agents until explicit Phase 6 authorization
