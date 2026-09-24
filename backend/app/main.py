@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import cases, traces
+from app.api.v1 import cases, traces, risk
 
 app = FastAPI(
     title="LedgerLens API",
     description="Blockchain intelligence workstation for cryptocurrency fraud investigation",
-    version="0.2.0"
+    version="0.3.0"
 )
 
 app.add_middleware(
@@ -18,13 +18,14 @@ app.add_middleware(
 
 app.include_router(cases.router, prefix="/api/v1")
 app.include_router(traces.router, prefix="/api/v1")
+app.include_router(risk.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
     return {
         "service": "LedgerLens API",
-        "version": "0.2.0",
-        "phase": "Phase 2 - Blockchain Foundation",
+        "version": "0.3.0",
+        "phase": "Phase 4 - Intelligence Layer (Stages 1-4)",
         "status": "operational"
     }
 

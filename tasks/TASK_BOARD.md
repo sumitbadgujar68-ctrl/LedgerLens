@@ -1,7 +1,7 @@
 # LedgerLens Task Board
 
-**Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGE 3: ENTITY INTELLIGENCE + VASP ATTRIBUTION)
+**Last Updated:** 2026-09-24  
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-4 COMPLETE)
 
 ---
 
@@ -37,6 +37,27 @@
 - [x] `backend/app/services/entity/attribution_engine.py`
 - [x] `backend/tests/test_entity_services.py` (unit tests for address registry and attribution engine)
 - [x] Full backend pytest suite passes (0 regressions)
+
+---
+
+## Active Tasks (Phase 4 — Stage 4)
+
+### TASK-P4-004: Explainable Risk Engine
+**Owner:** RISK ENGINEER  
+**Status:** COMPLETE ✅  
+**Priority:** HIGH  
+**Started:** 2026-09-24  
+**Completed:** 2026-09-24  
+**Deliverables:**
+- [x] `backend/app/services/risk/__init__.py`
+- [x] `backend/app/services/risk/models.py` (RiskFactor, RiskScore, RiskCategory, scoring version)
+- [x] `backend/app/services/risk/factors.py` (6 deterministic factor calculators)
+- [x] `backend/app/services/risk/engine.py` (RiskEngine orchestrator + persistence)
+- [x] `backend/app/services/risk/explanation.py` (human-readable explanations)
+- [x] `backend/app/models/risk_schemas.py` (Pydantic API schemas)
+- [x] `backend/app/api/v1/risk.py` (3 API endpoints)
+- [x] `backend/tests/test_risk.py` (20 comprehensive tests)
+- [x] Full backend pytest suite passes (116/116, 0 regressions)
 
 ---
 
@@ -416,11 +437,14 @@ First Phase-3 task: apply migration `002_phase2_tracing.sql` to live Supabase._
 
 - **Phase 1 is officially CLOSED (2026-09-23)**
 - **Phase 2 is officially CLOSED (2026-09-23)**
+- **Phase 3 is officially CLOSED (2026-09-23)**
+- **Phase 4 is officially CLOSED (2026-09-24)**
 - Phase-2 local suite: 41/41 tests PASS
+- Phase-4 local suite: 116/116 tests PASS
 - No secrets or temporary environment files committed
-- Migration 002 file-complete but not yet applied to live Supabase (deferred to Phase 3 start)
-- Phase 3 NOT authorized yet
-- Do NOT activate Frontend / QA / VASP / Risk / AI agents until Phase 3 authorization
+- Migration 002 & 003 file-complete but not yet applied to live Supabase (apply before Phase 5)
+- Phase 5 NOT authorized yet
+- Do NOT activate Frontend / QA / AI / Security agents until Phase 5 authorization
 
 ---
 

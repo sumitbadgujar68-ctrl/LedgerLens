@@ -1,34 +1,47 @@
 # LedgerLens Project Status
 
-**Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-3 COMPLETE)  
-**Phase Status:** IN PROGRESS (Stage 4 Not Started)
+**Last Updated:** 2026-09-24  
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-4 COMPLETE)  
+**Phase Status:** COMPLETE ✅
 
 ---
 
-## Current Phase: PHASE 4 — INTELLIGENCE LAYER (STAGE 3: ENTITY INTELLIGENCE + VASP ATTRIBUTION) - COMPLETE ✅
+## Current Phase: PHASE 4 — INTELLIGENCE LAYER (STAGES 1-4 COMPLETE) - COMPLETE ✅
 
-**Objective:** Implement the Entity Intelligence and VASP Attribution layer defined in the approved Phase 4 architecture.
+**Objective:** Implement the full Intelligence Layer: Pattern Detection, Entity Intelligence, VASP Attribution, and Explainable Risk Scoring.
 
 **Start Date:** 2026-09-23  
-**Completion Date:** 2026-09-23  
+**Completion Date:** 2026-09-24  
 **Authorization:** Explicit from MASTER / CTO  
 **Active Agents (during stage):** 
 - MASTER / CTO
 - VASP / Entity Intelligence Engineer (activated for Phase 4 Stage 3, now deactivated)
+- Risk Engineer (activated for Phase 4 Stage 4, now deactivated)
+- Backend Engineer (secondary for Stage 4)
+- QA / Test Engineer (verification)
 
-### Phase 4 Stage 3 Goals (Entity Intelligence + VASP Attribution) - ALL COMPLETED ✅
+### Phase 4 Stage 4 Goals (Explainable Risk Engine) - ALL COMPLETED ✅
 
-- [x] Entity lookup service implemented (`backend/app/services/entity/`)
-- [x] Address registry service implemented (`backend/app/services/entity/address_registry.py`)
-- [x] Attribution engine implemented (`backend/app/services/entity/attribution_engine.py`)
-- [x] DIRECT/SUPPORTED/INFERRED/UNKNOWN provenance levels enforced
-- [x] Provenance and evidence stored for every attribution
-- [x] Seed catalog validated and loaded
-- [x] No risk scoring implemented (belongs to Stage 4)
-- [x] No direct blockchain provider calls from attribution engine
-- [x] Comprehensive tests pass (9/9 entity service tests, 96/96 total backend tests)
-- [x] Stage-3 Checkpoint commit
+- [x] Risk engine service implemented (`backend/app/services/risk/`)
+- [x] Six deterministic risk factors with configurable weights:
+  - Known malicious association: +25
+  - Rapid onward transfer: +20
+  - High fan-in: +15
+  - Layering / peel-chain: +12
+  - Mixer interaction: +10
+  - Repeated case linkage: +5
+- [x] Risk categories: LOW (0–39), MEDIUM (40–69), HIGH (70–89), CRITICAL (90–100)
+- [x] Scoring versioning (`v1.0.0`) and evidence references preserved
+- [x] Human-readable risk explanations generated from factor breakdown
+- [x] API endpoints implemented:
+  - `GET /api/v1/cases/{case_id}/wallets/{wallet_address}/risk`
+  - `GET /api/v1/risk/{risk_id}/explanation`
+  - `GET /api/v1/cases/{case_id}/risk-summary`
+- [x] No ML/LLM scoring — fully deterministic and explainable
+- [x] No direct blockchain provider calls from risk logic
+- [x] Observed facts, patterns, attributions, and risk assessments remain distinguishable
+- [x] Comprehensive tests pass (20/20 risk tests, 116/116 total backend tests)
+- [x] Stage-4 Checkpoint commit
 
 ---
 
@@ -67,14 +80,16 @@
 
 ### Active Work
 
-**Current Focus:** Phase 3 CLOSED. All specialist agents deactivated. Standby for Phase 4 authorization.
+**Current Focus:** Phase 4 COMPLETE. All specialist agents deactivated. Standby for Phase 5 authorization.
 
 **Active Agents:**
 - MASTER / CTO (active since 2026-09-22)
 
-**Deactivated Agents (post-Phase-3 checkpoint):**
-- Frontend Engineer — deactivated 2026-09-23
-- QA / Test Engineer — deactivated 2026-09-23
+**Deactivated Agents (post-Phase-4 checkpoint):**
+- VASP / Entity Intelligence Engineer — deactivated 2026-09-23 (post Stage 3)
+- Risk Engineer — deactivated 2026-09-24 (post Stage 4)
+- Backend Engineer — standby
+- QA / Test Engineer — standby
 
 ---
 
@@ -355,6 +370,49 @@
 
 ---
 
+## Phase 4 Closure Record
+
+**Closure Date:** 2026-09-24  
+**Closed By:** MASTER / CTO
+
+### Verification Summary
+
+| Verification Layer | Status |
+|---|---|
+| Stage 1: Intelligence schema & migration 003 | ✅ PASS |
+| Stage 2: Pattern detection engine (7 detectors) | ✅ PASS (41 tests) |
+| Stage 3: Entity intelligence + VASP attribution | ✅ PASS (9 tests) |
+| Stage 4: Explainable risk engine (6 factors) | ✅ PASS (20 tests) |
+| Full local suite | ✅ PASS (116/116) |
+| Syntax/import verification (`py_compile`) | ✅ PASS |
+| Route registration (`/api/v1/cases/{id}/wallets/{wallet}/risk`, `/risk/{id}/explanation`, `/cases/{id}/risk-summary`) | ✅ PASS |
+| Secret hygiene (no `.env`, only `.env.example`) | ✅ PASS |
+| Scope boundary (no AI / cross-chain / real-time alerting) | ✅ PASS |
+
+### Closure Checklist
+
+- [x] Provider-agnostic boundary preserved
+- [x] Amounts Decimal-only (no float leakage)
+- [x] Deterministic risk factors with configurable weights
+- [x] Scoring versioning and evidence provenance
+- [x] Human-readable explanations from factor breakdown
+- [x] No ML/LLM black-box scoring introduced
+- [x] Observed facts vs. derived intelligence distinguishable
+- [x] No secrets committed
+- [x] Documentation updated (STATUS, TASK_BOARD, DECISIONS, AGENTS)
+- [x] Git checkpoint created
+
+### Known Limitations / Deferrals
+
+- Migration 002 & 003 **not yet applied to live Supabase** (apply before Phase 5)
+- Risk calculation is **synchronous inline** (async job queue per ADR-009 deferred)
+- Etherscan secondary provider (ADR-007) remains plan-level
+- TRON/Solana/Bitcoin adapters out of Phase-4 scope
+- Repeated case linkage factor requires live DB for cross-case queries
+- Frontend risk display deferred to Phase 5/6
+
+---
+
 ## Risk Register
 
 | Risk | Severity | Status | Mitigation |
@@ -381,9 +439,10 @@
 
 - Phase 1 is officially CLOSED as of 2026-09-23
 - Phase 2 is officially CLOSED as of 2026-09-23
-- Phase 3 is officially AUTHORIZED and IN PROGRESS as of 2026-09-23
-- Progressive agent activation remains the governing policy (Frontend Engineer & QA / Test Engineer active)
-- Do NOT activate Phase-4+ agents (VASP, Risk, AI, Security) until explicit Phase 4 authorization
+- Phase 3 is officially CLOSED as of 2026-09-23
+- Phase 4 is officially CLOSED as of 2026-09-24
+- Progressive agent activation remains the governing policy
+- Do NOT activate Phase-5+ agents (AI, Security, Release) until explicit Phase 5 authorization
 
 ---
 

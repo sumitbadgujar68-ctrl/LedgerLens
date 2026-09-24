@@ -1,7 +1,7 @@
 # LedgerLens Agent Registry
 
-**Last Updated:** 2026-09-23  
-**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-3 COMPLETE, STAGE 4 NOT STARTED)  
+**Last Updated:** 2026-09-24  
+**Current Phase:** PHASE 4 — INTELLIGENCE LAYER (STAGES 1-4 COMPLETE)  
 **Previous Phase:** PHASE 3 — INVESTIGATION UI (CLOSED ✅)
 
 ## Purpose
@@ -51,6 +51,24 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 **Ownership:**
 - backend/app/services/entity/
+
+---
+
+### RISK ENGINEER (DEACTIVATED — Phase 4 Stage 4 Complete)
+**Status:** Deactivated — 2026-09-24 (post Stage 4 checkpoint)  
+**Activated:** 2026-09-24 (Phase 4 Stage 4 — Explainable Risk Engine)  
+**Deactivated:** 2026-09-24  
+**Responsibilities:**
+- Risk Engine: `backend/app/services/risk/`
+- Factor calculators: `backend/app/services/risk/factors.py`
+- Risk engine orchestrator: `backend/app/services/risk/engine.py`
+- Risk explanations: `backend/app/services/risk/explanation.py`
+- Risk API: `backend/app/api/v1/risk.py`
+- Unit tests for risk factors, engine, and API
+
+**Ownership:**
+- backend/app/services/risk/
+- backend/app/api/v1/risk.py
 
 ---
 
@@ -167,15 +185,11 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 ## Planned Future Agents (Not Yet Active)
 
-### PHASE 4 AGENTS
+### PHASE 5 AGENTS
 
-#### VASP / ENTITY INTELLIGENCE ENGINEER
-**Planned Activation:** Phase 4  
-**Ownership:** services/entity/, services/attribution/
-
-#### RISK ENGINEER
-**Planned Activation:** Phase 4  
-**Ownership:** services/risk/
+#### AI / COPILOT ENGINEER
+**Planned Activation:** Phase 5  
+**Ownership:** services/ai/
 
 ---
 
@@ -259,6 +273,8 @@ Before activating any specialist agent, the MASTER must evaluate:
 | Database Engineer (Phase-2 extension) | 2026-09-23 | Phase 2 | Migration 002: trace_runs, transactions, graphs |
 | Frontend Engineer | 2026-09-23 | Phase 3 | Investigation UI, React Flow canvas, case management |
 | QA / Test Engineer | 2026-09-23 | Phase 3 | Component unit tests, regression suites, verification |
+| VASP / Entity Intelligence Engineer | 2026-09-23 | Phase 4 Stage 3 | Entity Intelligence, VASP Attribution |
+| Risk Engineer | 2026-09-24 | Phase 4 Stage 4 | Explainable Risk Engine |
 
 ---
 
@@ -270,5 +286,5 @@ Before activating any specialist agent, the MASTER must evaluate:
 - Phase 1 is CLOSED (2026-09-23)
 - Phase 2 is CLOSED (2026-09-23) — all Phase-2 agents deactivated after checkpoint
 - Phase 3 is CLOSED (2026-09-23) — all Phase-3 agents deactivated after checkpoint
-- Phase 4 is NOT started and NOT authorized
-- Do NOT activate VASP / Risk / AI / Security / Release agents until explicit Phase 4 authorization
+- Phase 4 is COMPLETE (2026-09-24) — all Phase-4 agents deactivated after checkpoint
+- Do NOT activate AI / Security / Release agents until explicit Phase 5 authorization

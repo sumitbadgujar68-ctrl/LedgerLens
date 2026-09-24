@@ -39,6 +39,14 @@ class GraphEdge(BaseModel):
     hop: int = 0
     metadata: dict = Field(default_factory=dict)
 
+    def __hash__(self):
+        return hash(self.id)
+
+    def __eq__(self, other):
+        if isinstance(other, GraphEdge):
+            return self.id == other.id
+        return False
+
 
 class CanonicalGraph(BaseModel):
     root_wallet_address: str
