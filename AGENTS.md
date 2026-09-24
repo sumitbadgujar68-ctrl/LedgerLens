@@ -1,8 +1,8 @@
 # LedgerLens Agent Registry
 
-**Last Updated:** 2026-09-24  
-**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — NEXT: PHASE 6 (NOT STARTED)  
-**Previous Phase:** PHASE 4 — INTELLIGENCE LAYER (CLOSED ✅)
+**Last Updated:** 2026-09-25  
+**Current Phase:** PHASE 6 — REPORTING (CLOSED ✅) — NEXT: PHASE 7 (NOT STARTED)  
+**Previous Phase:** PHASE 5 — AI COPILOT (CLOSED ✅)
 
 ## Purpose
 
@@ -18,7 +18,9 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Standing Active Agents (Phase 5 — CLOSED; MASTER / CTO only)
+## Current Standing Active Agents (Phase 6 — CLOSED; MASTER / CTO only)
+
+**Phase 6 note:** No specialist agent was activated for Phase 6. Per the progressive activation policy and ROADMAP ("None — existing agents sufficient"), all six Phase 6 steps were executed and verified by MASTER / CTO alone.
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -213,18 +215,14 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 ---
 
-### PHASE 6-7 AGENTS
+### PHASE 7 AGENTS
 
 #### SECURITY ENGINEER
-**Planned Activation:** Phase 6-7  
+**Planned Activation:** Phase 7  
 **Responsibilities:** Security review, audit, vulnerability assessment
 
 #### RELEASE / DOCUMENTATION ENGINEER
-**Planned Activation:** Phase 6-7  
-**Responsibilities:** Release notes, deployment documentation
-
-#### RELEASE / DOCUMENTATION ENGINEER
-**Planned Activation:** Phase 6-7  
+**Planned Activation:** Phase 7  
 **Responsibilities:** Release notes, deployment documentation
 
 ---
@@ -301,5 +299,8 @@ Before activating any specialist agent, the MASTER must evaluate:
 - Phase 3 is CLOSED (2026-09-23) — all Phase-3 agents deactivated after checkpoint
 - Phase 4 is CLOSED (2026-09-24) — all Phase-4 agents deactivated after checkpoint
 - Phase 5 is CLOSED (2026-09-24) — AI / Copilot Engineer deactivated after checkpoint
+- Phase 6 is CLOSED (2026-09-25) — MASTER / CTO only; no specialist agent was activated
 - Documented limitation: real LLM/provider behavior UNVERIFIED (no `OPENAI_API_KEY` configured)
-- Phase 6 is NOT STARTED — do NOT activate Security / Release agents until explicit Phase 6 authorization
+- Documented limitation: PDF export fails explicitly with `PDF_RENDERER_UNAVAILABLE` when no renderer library is installed (never reported as a successful export)
+- Migrations 004/005 prepared but not applied (DB connectivity unavailable)
+- Phase 7 is NOT STARTED — do NOT activate Security / Release agents until explicit Phase 7 authorization

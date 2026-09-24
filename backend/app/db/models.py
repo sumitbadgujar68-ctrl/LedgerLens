@@ -223,3 +223,45 @@ class RiskScoreRecord(Base):
 
     case = relationship("Case", back_populates="risk_scores")
     trace_run = relationship("TraceRun", back_populates="risk_scores")
+
+
+class Evidence(Base):
+    __tablename__ = "evidence"
+
+    evidence_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.case_id", ondelete="CASCADE"), nullable=False, index=True)
+    evidence_type = Column(String(50), nullable=False, index=True)
+    reference_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    investigator_note = Column(Text, nullable=True)
+    investigator_id = Column(UUID(as_uuid=True), ForeignKey("investigators.investigator_id"), nullable=False, index=True)
+    pinned_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class ReportRecord(Base):
+    __tablename__ = "reports"
+
+    report_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.case_id", ondelete="CASCADE"), nullable=False, index=True)
+    report_type = Column(String(50), nullable=False)
+    format = Column(String(50), nullable=False)
+    content = Column(Text, nullable=True)
+    file_path = Column(String(500), nullable=True)
+    generated_by = Column(UUID(as_uuid=True), ForeignKey("investigators.investigator_id"), nullable=False, index=True)
+    generated_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class JobRecord(Base):
+    __tablename__ = "jobs"
+
+    job_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    job_type = Column(String(100), nullable=False)
+    status = Column(String(50), nullable=False, default="queued", index=True)
+    progress = Column(Integer, nullable=True, default=0)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.case_id", ondelete="CASCADE"), nullable=True, index=True)
+    initiated_by = Column(UUID(as_uuid=True), ForeignKey("investigators.investigator_id"), nullable=False)
+    parameters = Column(JSONB, nullable=True)
+    result = Column(JSONB, nullable=True)
+    error_message = Column(Text, nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)

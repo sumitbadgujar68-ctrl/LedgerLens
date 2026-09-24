@@ -6,9 +6,9 @@
 
 ## Project Status
 
-**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — Next: Phase 6 (NOT STARTED)  
+**Current Phase:** PHASE 6 — REPORTING (CLOSED ✅) — Next: Phase 7 (NOT STARTED)  
 **Status:** Closed  
-**Last Updated:** 2026-09-24
+**Last Updated:** 2026-09-25
 
 This is a production-oriented MVP for the Smart India Hackathon (SIH) problem statement focused on blockchain forensics and cryptocurrency fraud investigation.
 
@@ -111,43 +111,45 @@ Investigators need to quickly understand:
 - Coding standards
 - Architecture definition
 
-### PHASE 1 — CASE FOUNDATION
+### ✅ PHASE 1 — CASE FOUNDATION (Complete)
 - Case intake
 - Wallet/transaction input
 - Database schema
 - Basic backend API
 
-### PHASE 2 — BLOCKCHAIN FOUNDATION
+### ✅ PHASE 2 — BLOCKCHAIN FOUNDATION (Complete)
 - Ethereum adapter
 - Transaction normalization
 - Multi-hop tracing
 - Graph model
 
-### PHASE 3 — INVESTIGATION UI
+### ✅ PHASE 3 — INVESTIGATION UI (Complete)
 - Dashboard
 - Case management screen
 - Transaction visualization
 - Evidence panel
 
-### PHASE 4 — INTELLIGENCE
+### ✅ PHASE 4 — INTELLIGENCE (Complete)
 - Pattern detection
 - VASP attribution
 - Risk scoring
 - Entity registry
 
-### PHASE 5 — AI COPILOT (Complete — backend; real-provider verification UNVERIFIED)
+### ✅ PHASE 5 — AI COPILOT (Complete — backend; real-provider verification UNVERIFIED)
 - Investigator assistant
 - Natural language Q&A
 - Case summarization
 - Risk explanation with citations
 - Hallucination prevention (backend)
 
-### PHASE 6 — REPORTING
-- Evidence capture
-- Report generation
-- Export capabilities
+### ✅ PHASE 6 — REPORTING (Complete)
+- Evidence capture and provenance
+- Report generation (14 documented sections, no fabricated data)
+- Export rendering: sanitized HTML, deterministic JSON, PDF
+- Report API (generate / list / download) and artifact storage
+- PDF export fails explicitly with `PDF_RENDERER_UNAVAILABLE` if no renderer is installed (never a fake successful export)
 
-### PHASE 7 — HARDENING
+### PHASE 7 — HARDENING (NOT STARTED)
 - Security audit
 - Performance testing
 - Deployment validation
@@ -171,7 +173,7 @@ See **[AGENTS.md](AGENTS.md)** for the current agent team structure and activati
 
 ## Setup Instructions
 
-**Phases 0–5 are complete. Phase 6 (Reporting) has NOT started.**  
+**Phases 0–6 are complete. Phase 7 (Hardening) has NOT started.**  
 Real LLM/provider behavior remains UNVERIFIED — no `OPENAI_API_KEY` is configured (documented limitation).  
 See [docs/STATUS.md](docs/STATUS.md) for current status and [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan.
 

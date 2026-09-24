@@ -173,6 +173,7 @@ class GroundingLayer:
                 "evidence_type": e.evidence_type,
                 "reference_id": str(e.reference_id),
                 "investigator_note": e.investigator_note,
+                "investigator_id": str(e.investigator_id),
                 "pinned_at": e.pinned_at.isoformat(),
             }
             for e in evidence

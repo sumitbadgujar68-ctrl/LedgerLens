@@ -1,11 +1,94 @@
 # LedgerLens Task Board
 
-**Last Updated:** 2026-09-24  
-**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — NEXT: PHASE 6 (NOT STARTED)
+**Last Updated:** 2026-09-25  
+**Current Phase:** PHASE 6 — REPORTING (CLOSED ✅) — NEXT: PHASE 7 (NOT STARTED)
 
 ---
 
-## Active Tasks (Phase 5)
+## Active Tasks
+
+_None — Phase 6 is CLOSED ✅ (2026-09-25). Phase 7 (Hardening) has NOT started; awaiting explicit MASTER / CTO authorization._
+
+---
+
+## Completed Tasks (Phase 6)
+
+### TASK-P6-001: Report Generation Service (Step 1)
+**Owner:** MASTER / CTO (report service)  
+**Status:** COMPLETE ✅ — 2026-09-24  
+**Deliverables:**
+- [x] `backend/app/services/reporting/generator.py` (ReportGenerator, `SECTION_ORDER`, all 14 documented sections)
+- [x] Deterministic aggregation of case/trace/graph/risk/pattern/entity/attribution data
+- [x] No fabrication: unavailable sources carry `available=false` + reason; empty findings carry a note
+- [x] Provenance identifiers preserved (transaction_hash, pattern_id, attribution_id, risk_score_id, trace_id, evidence_id)
+
+---
+
+### TASK-P6-002: Evidence Integration (Step 2)
+**Owner:** MASTER / CTO  
+**Status:** COMPLETE ✅ — 2026-09-24  
+**Deliverables:**
+- [x] `migrations/004_phase6_evidence.sql` + `004_rollback.sql` (evidence table, DATA_MODEL 4.11)
+- [x] `Evidence` ORM model; `GroundingLayer.get_evidence` exposes full chain of custody (incl. `investigator_id`)
+- [x] Evidence section aggregation with explicit unavailability when the evidence store is unprovisioned
+- [x] Investigator notes reused from the existing case record
+- [x] `backend/tests/test_report_aggregation.py`
+
+---
+
+### TASK-P6-003: Report Schemas, Models, Persistence (Step 3)
+**Owner:** MASTER / CTO  
+**Status:** COMPLETE ✅ — 2026-09-24  
+**Deliverables:**
+- [x] `backend/app/models/report_schemas.py` (API_CONTRACT 4.9 request/response + `ReportDataResponse`)
+- [x] `migrations/005_phase6_reports_jobs.sql` + `005_rollback.sql` (reports, jobs — DATA_MODEL 4.13/4.14)
+- [x] `ReportRecord` / `JobRecord` ORM models
+- [x] `backend/app/services/reporting/store.py` — deterministic `serialize_report`, round-trip fidelity, job lifecycle
+- [x] `backend/tests/test_report_persistence.py`
+
+---
+
+### TASK-P6-004: Report API (Step 4)
+**Owner:** MASTER / CTO  
+**Status:** COMPLETE ✅ — 2026-09-24  
+**Deliverables:**
+- [x] `backend/app/api/v1/reports.py` — `POST /cases/{id}/reports` (202), `GET /cases/{id}/reports`, `GET /reports/{id}/download`
+- [x] Router registered in `backend/app/main.py`
+- [x] Documented error envelopes: 404 CASE/REPORT_NOT_FOUND, 422 INVALID_REPORT_TYPE, 500 REPORT_GENERATION_ERROR
+- [x] `backend/tests/test_report_api.py`
+
+---
+
+### TASK-P6-005: Report Export Rendering (Step 5)
+**Owner:** MASTER / CTO  
+**Status:** COMPLETE ✅ — 2026-09-25  
+**Deliverables:**
+- [x] `backend/app/services/reporting/render.py` — sanitized HTML (all values escaped, strict CSP, no executable markup), deterministic JSON, PDF export
+- [x] `backend/app/services/reporting/artifacts.py` — `ReportArtifactStore` (write/read, path-traversal guard, `LEDGERLENS_REPORT_DIR` override)
+- [x] `ReportStore.save_report` renders HTML/PDF artifacts into `reports.file_path`; JSON stays inline (`file_path=None`)
+- [x] Download serves the persisted artifact verbatim — no regeneration during download
+- [x] `backend/requirements.txt` — `reportlab==5.0.1`
+- [x] `.gitignore` — `backend/var/` (generated artifacts)
+- [x] `backend/tests/test_report_rendering.py` (37 tests)
+
+---
+
+### TASK-P6-006: Final Verification and Checkpoint (Step 6)
+**Owner:** MASTER / CTO  
+**Status:** COMPLETE ✅ — 2026-09-25  
+**Verification Checklist:**
+- [x] Phase 6 focused report suite: 78/78 PASS
+- [x] Full backend suite: 268/268 PASS
+- [x] Frontend suite: 9/9 PASS; production build PASS
+- [x] Secrets scan: CLEAN (no keys, no `.env`, no artifacts, no caches staged)
+- [x] ROADMAP Phase 6 acceptance criteria verified (sections, no fabrication, unavailable-data semantics, provenance, HTML sanitization, JSON determinism, explicit PDF behavior, artifact download without regeneration)
+- [x] Documentation updated (STATUS, ROADMAP, TASK_BOARD, AGENTS, README)
+- [x] Migrations 004/005 documented as prepared / pending live application (DB connectivity unavailable)
+- [x] Git checkpoint commit created
+
+---
+
+## Completed Tasks (Phase 5)
 
 ### TASK-P5-001: AI Copilot Implementation
 **Owner:** AI / COPILOT ENGINEER  
@@ -472,8 +555,8 @@ _None_
 
 ## Pending / Future Tasks
 
-_Phase 3 tasks will be created upon explicit Phase 3 authorization.  
-First Phase-3 task: apply migration `002_phase2_tracing.sql` to live Supabase._
+_Phase 7 (Hardening) tasks will be created upon explicit Phase 7 authorization.  
+First Phase-7 prerequisite: apply migrations `004_phase6_evidence.sql` and `005_phase6_reports_jobs.sql` to the live database once connectivity is restored._
 
 ---
 
@@ -484,17 +567,22 @@ First Phase-3 task: apply migration `002_phase2_tracing.sql` to live Supabase._
 - **Phase 3 is officially CLOSED (2026-09-23)**
 - **Phase 4 is officially CLOSED (2026-09-24)**
 - **Phase 5 is officially CLOSED (2026-09-24) — MASTER-authorized checkpoint**
-- **Phase 6 is NOT STARTED**
+- **Phase 6 is officially CLOSED (2026-09-25) — MASTER-authorized checkpoint (Steps 1–6)**
+- **Phase 7 is NOT STARTED**
 - Phase-2 local suite: 41/41 tests PASS
 - Phase-4 local suite: 116/116 tests PASS
 - Phase-5 local suite: 190/190 tests PASS (116 pre-existing + 74 Phase 5)
 - Phase-5 dedicated suite: 74/74 tests PASS (12/12 acceptance categories explicit)
+- Phase-6 focused report suite: 78/78 tests PASS (Step 5 export-rendering subset: 37/37)
+- Phase-6 complete backend suite: 268/268 tests PASS
 - Frontend suite: 9/9 tests PASS, production build PASS
 - No secrets or temporary environment files committed
 - **Documented limitation: real LLM/provider behavior UNVERIFIED (no `OPENAI_API_KEY` configured; provider mocked in tests)**
+- **Documented limitation: PDF export fails explicitly with `PDF_RENDERER_UNAVAILABLE` when no renderer library is installed — an unavailable renderer is never reported as a successful export**
 - Migration 002 & 003 file-complete but not yet applied to live Supabase
-- Do NOT activate Security / Release agents until Phase 6 authorization
-- Do NOT start Phase 6 work until explicit MASTER / CTO authorization
+- Migrations 004 (evidence) & 005 (reports/jobs) file-complete but not yet applied — DB connectivity unavailable; apply with rollbacks when connectivity is restored
+- Do NOT activate Security / Release agents until Phase 7 authorization
+- Do NOT start Phase 7 work until explicit MASTER / CTO authorization
 
 ---
 

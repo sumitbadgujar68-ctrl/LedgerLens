@@ -1,12 +1,64 @@
 # LedgerLens Project Status
 
-**Last Updated:** 2026-09-24  
-**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — NEXT: PHASE 6 (NOT STARTED)  
+**Last Updated:** 2026-09-25  
+**Current Phase:** PHASE 6 — REPORTING (CLOSED ✅) — NEXT: PHASE 7 (NOT STARTED)  
 **Phase Status:** CLOSED ✅
 
 ---
 
-## Current Phase: PHASE 5 — AI COPILOT (CLOSED ✅)
+## Current Phase: PHASE 6 — REPORTING (CLOSED ✅)
+
+**Objective:** Implement investigation report generation with evidence aggregation, PDF export, and structured output.
+
+**Start Date:** 2026-09-24  
+**Closure Date:** 2026-09-25  
+**Closed By:** MASTER / CTO (explicit Step 6 closure authorization)  
+**Agents (during phase):**
+- MASTER / CTO (no specialist agent activation required; existing agents sufficient per ROADMAP)
+
+### Phase 6 Steps
+
+| Step | Scope | Status |
+|------|-------|--------|
+| Step 1 | ReportGenerator — 14 documented sections, deterministic aggregation | ✅ COMPLETE |
+| Step 2 | Evidence integration — chain-of-custody provenance, explicit unavailability | ✅ COMPLETE |
+| Step 3 | Report schemas / `reports`+`jobs` models / deterministic persistence | ✅ COMPLETE |
+| Step 4 | Report API (POST generate, GET list, GET download) | ✅ COMPLETE |
+| Step 5 | Report export rendering — HTML, JSON, PDF + artifact storage | ✅ COMPLETE |
+| Step 6 | Final verification and checkpoint closure | ✅ COMPLETE (this step) |
+
+### Phase 6 Status: CLOSED ✅
+
+**Delivered:**
+- [x] `backend/app/services/reporting/generator.py` — ReportGenerator, all 14 ROADMAP sections, no fabrication
+- [x] `backend/app/services/reporting/store.py` — ReportStore, deterministic `serialize_report`, job lifecycle, artifact persistence
+- [x] `backend/app/services/reporting/render.py` — sanitized HTML, deterministic JSON, PDF export
+- [x] `backend/app/services/reporting/artifacts.py` — ReportArtifactStore (write/read, path-traversal guard)
+- [x] `backend/app/api/v1/reports.py` — 3 documented endpoints registered in `app/main.py`
+- [x] `backend/app/models/report_schemas.py` — request/response schemas per API_CONTRACT 4.9
+- [x] `backend/app/db/models.py` — `Evidence`, `ReportRecord`, `JobRecord` (DATA_MODEL 4.11/4.13/4.14)
+- [x] Migrations `004_phase6_evidence.sql` + `005_phase6_reports_jobs.sql` with rollbacks
+- [x] `backend/requirements.txt` — `reportlab==5.0.1` (PDF renderer)
+- [x] Tests: `test_report_aggregation.py`, `test_report_persistence.py`, `test_report_api.py`, `test_report_rendering.py`
+
+**Final test results at closure:**
+- Phase 6 focused report suite: **78/78 PASS**
+- Step 5 export-rendering suite: **37/37 PASS**
+- Complete backend suite: **268/268 PASS**
+- Frontend suite: **9/9 PASS** (no frontend changes in this phase)
+- Frontend production build: PASS
+- Secrets scan: CLEAN (no keys committed; `.env` git-ignored and untracked)
+
+**Documented limitation (accepted at closure):**
+- [ ] **PDF renderer availability** — PDF export runs through the approved renderer path (`reportlab==5.0.1`, added in Step 5). If no renderer library is installed in an environment, export fails explicitly with `PDF_RENDERER_UNAVAILABLE`, the job is marked `failed`, and **no PDF artifact or content is persisted**. An unavailable PDF renderer is never represented as a successful export.
+- [ ] **Migrations 004/005 not applied to the live database** — prepared and rollback-covered, pending application when DB connectivity is restored.
+- [ ] **Phase 6 frontend report UI** (generation UI, preview, download button, format selector) excluded from the Phase 6 step authorization — deferred.
+
+**Phase 6 CLOSED ✅ via checkpoint commit. Phase 7 NOT STARTED. No Phase 7 work, no frontend report UI, no new APIs outside Phase 6.**
+
+---
+
+## Previous Phase: PHASE 5 — AI COPILOT (CLOSED ✅)
 
 **Objective:** Implement the AI Investigation Copilot with grounded answers, citations, hallucination prevention, and three approved API endpoints.
 
@@ -101,7 +153,7 @@
 
 ### Active Work
 
-**Current Focus:** Phase 5 CLOSED ✅ (2026-09-24). AI / Copilot Engineer deactivated post-checkpoint. Standby for Phase 6 authorization (NOT STARTED).
+**Current Focus:** Phase 6 CLOSED ✅ (2026-09-25). Master-only execution throughout (no specialist agent activation required). Standby for Phase 7 authorization (NOT STARTED).
 
 **Active Agents:**
 - MASTER / CTO (active since 2026-09-22)
@@ -339,24 +391,12 @@
 
 ## Next Steps
 
-1. **Begin Phase 3 frontend implementation** per docs/PHASE_3_UI_UX_SPECIFICATION.md
-2. Follow implementation stack: React + TypeScript + Tailwind + React Flow
-3. Implement screens in priority order: Investigation Workspace → Fund-Flow Graph → Transaction/Wallet Detail → New Investigation → Dashboard → Evidence/Notes
-4. Ensure no direct blockchain calls from browser (all via FastAPI)
-5. Apply design fidelity: dark forensic aesthetic, hop taxonomy colors, monospace identifiers
-6. Label all synthetic/demo data as DEMO or SYNTHETIC
+1. **Await explicit Phase 7 (Hardening) authorization** — do NOT start Phase 7 automatically
+2. Apply migrations `004_phase6_evidence.sql` and `005_phase6_reports_jobs.sql` to the live database once connectivity is restored (rollbacks available)
+3. Optional follow-ups deferred from Phase 6 scope: frontend report UI, real-provider (OpenAI) verification
+4. Phase 7 scope when authorized: security audit, performance/regression testing, deployment preparation, final documentation
 
-**Phase 3 completion criteria:**
-- [ ] Frontend app created
-- [ ] All seven screens implemented
-- [ ] FastAPI integration working
-- [ ] No direct blockchain/provider calls from browser
-- [ ] Loading/error/empty states implemented
-- [ ] QA validation passes
-- [ ] Visual review passes
-- [ ] Git checkpoint created
-
-**STOP:** Do NOT proceed to Phase 4 automatically. Wait for explicit authorization.
+**STOP:** Do NOT proceed to Phase 7 automatically. Wait for explicit authorization.
 
 ---
 
@@ -391,6 +431,24 @@
 - [x] Documentation updated (STATUS, TASK_BOARD, DECISIONS, AGENTS)
 - [x] Git checkpoint created
 - [x] Ready for Phase 3 authorization
+
+### Phase 6 (CLOSED 2026-09-25)
+
+- [x] Report generation service covering all 14 documented sections
+- [x] Evidence aggregation with chain-of-custody provenance
+- [x] Deterministic report persistence (`reports`/`jobs` models + schemas)
+- [x] Report API (generate / list / download) registered and tested
+- [x] Sanitized HTML export (no executable markup, strict CSP)
+- [x] Deterministic JSON export (byte-stable, provenance preserved)
+- [x] PDF export via approved renderer with explicit `PDF_RENDERER_UNAVAILABLE` failure path
+- [x] Artifact storage (`file_path`) and download without regeneration
+- [x] Phase 6 focused report tests passing (78/78)
+- [x] Full backend suite passing (268/268)
+- [x] Frontend regression clean (9/9 tests, production build PASS)
+- [x] No secrets committed
+- [x] Documentation updated (STATUS, ROADMAP, TASK_BOARD, AGENTS, README)
+- [x] Migrations 004/005 prepared with rollbacks (application pending DB connectivity)
+- [x] Git checkpoint created
 
 ---
 
@@ -466,9 +524,10 @@
 - Phase 3 is officially CLOSED as of 2026-09-23
 - Phase 4 is officially CLOSED as of 2026-09-24
 - Phase 5 is officially CLOSED as of 2026-09-24 — real LLM/provider behavior remains UNVERIFIED (no `OPENAI_API_KEY` configured; documented limitation)
-- Phase 6 is NOT STARTED
+- Phase 6 is officially CLOSED as of 2026-09-25 — PDF renderer unavailability fails explicitly (`PDF_RENDERER_UNAVAILABLE`); migrations 004/005 prepared but not yet applied (DB connectivity unavailable)
+- Phase 7 is NOT STARTED
 - Progressive agent activation remains the governing policy
-- Do NOT activate Phase-6+ agents (Security, Release) until explicit Phase 6 authorization
+- Do NOT activate Phase-7 agents (Security, Release) until explicit Phase 7 authorization
 
 ---
 
@@ -553,7 +612,14 @@
 
 ---
 
-### PHASE 6–7 — SECURITY & RELEASE
+### PHASE 6 — REPORTING
+**Status:** CLOSED ✅ (2026-09-25) — Steps 1–6 complete; report generation, evidence aggregation, persistence, report API, and HTML/JSON/PDF export rendering; 78/78 Phase 6 report tests and 268/268 full backend suite  
+**Agents:** MASTER / CTO only (no specialist activation required)  
+**Documented limitation:** PDF export fails explicitly with `PDF_RENDERER_UNAVAILABLE` when no renderer is installed (never a fake successful export); migrations 004/005 prepared, not yet applied (DB connectivity unavailable); frontend report UI deferred
+
+---
+
+### PHASE 7 — HARDENING
 **Status:** NOT STARTED  
 **Planned Agents:** Security Engineer, Release / Documentation Engineer
 

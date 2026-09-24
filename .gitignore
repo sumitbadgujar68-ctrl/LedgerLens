@@ -52,6 +52,9 @@ logs/
 *.sqlite
 *.sqlite3
 
+# Report export artifacts (Phase 6 Step 5)
+backend/var/
+
 # Supabase
 .supabase/
 

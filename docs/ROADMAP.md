@@ -1,7 +1,7 @@
 # LedgerLens Development Roadmap
 
-**Last Updated:** 2026-09-24  
-**Current Phase:** PHASE 5 — AI COPILOT (CLOSED ✅) — NEXT: PHASE 6 (NOT STARTED)  
+**Last Updated:** 2026-09-25  
+**Current Phase:** PHASE 6 — REPORTING (CLOSED ✅) — NEXT: PHASE 7 (NOT STARTED)  
 **Status:** Phased Development Plan
 
 ---
@@ -26,7 +26,7 @@ This roadmap defines the complete phased development plan for LedgerLens MVP, fr
 | Phase 3 | Investigation UI | 2 weeks | CLOSED ✅ | + Frontend, QA |
 | Phase 4 | Intelligence | 2 weeks | Stages 1-3 COMPLETE, Stage 4 NOT STARTED | + VASP (Stage 3), Risk (Stage 4) |
 | Phase 5 | AI Copilot | 1 week | CLOSED ✅ | + AI/Copilot |
-| Phase 6 | Reporting | 1 week | NOT STARTED | Release support |
+| Phase 6 | Reporting | 1 week | CLOSED ✅ | Release support |
 | Phase 7 | Hardening | 1 week | NOT STARTED | + Security |
 
 **Total Estimated Duration:** 10-11 weeks (MVP)
@@ -738,7 +738,7 @@ Implement LLM-based investigation assistant grounded in case data for natural la
 ## PHASE 6 — REPORTING
 
 **Duration:** 1 week  
-**Status:** Not Started  
+**Status:** CLOSED ✅ (Completed 2026-09-25 — MASTER / CTO checkpoint)  
 **Prerequisites:** Phase 5 complete, Phase 6 authorization received
 
 ### Objective
@@ -810,27 +810,27 @@ None (existing agents sufficient, Release Engineer support if needed)
 ### Acceptance Criteria
 
 **Functional:**
-- [ ] Investigator can generate report from case
-- [ ] Report includes all case data
-- [ ] Report includes graph summary
-- [ ] Report includes VASP attributions
-- [ ] Report includes risk analysis
-- [ ] Report includes evidence and notes
-- [ ] Report includes limitations section
-- [ ] Investigator can download report as PDF
-- [ ] Investigator can download report as JSON
+- [x] Investigator can generate report from case
+- [x] Report includes all case data
+- [x] Report includes graph summary
+- [x] Report includes VASP attributions
+- [x] Report includes risk analysis
+- [x] Report includes evidence and notes
+- [x] Report includes limitations section
+- [x] Investigator can download report as PDF
+- [x] Investigator can download report as JSON
 
 **Technical:**
-- [ ] Report generation working
-- [ ] PDF export working
-- [ ] Report sanitization implemented
-- [ ] Tests pass
+- [x] Report generation working
+- [x] PDF export working — via the approved renderer path (`reportlab`); when no renderer is installed the export fails explicitly with `PDF_RENDERER_UNAVAILABLE` and **never** returns fake PDF bytes
+- [x] Report sanitization implemented (all HTML output escaped; strict CSP; no executable markup)
+- [x] Tests pass
 
 **Quality:**
-- [ ] Reports reviewed for completeness
-- [ ] Reports reviewed for clarity
-- [ ] Disclaimers present
-- [ ] No fabricated data in reports
+- [x] Reports reviewed for completeness
+- [x] Reports reviewed for clarity
+- [x] Disclaimers present
+- [x] No fabricated data in reports
 
 ### Out of Scope
 
@@ -840,9 +840,35 @@ None (existing agents sufficient, Release Engineer support if needed)
 
 **Phase 6 is basic reporting.**
 
+### Phase 6 Closure Record
+
+**Closed:** 2026-09-25 by MASTER / CTO (final checkpoint commit)
+
+**Delivered (Steps 1–6):**
+- [x] Report aggregation service covering all 14 documented sections (`backend/app/services/reporting/generator.py`)
+- [x] Evidence aggregation with chain-of-custody provenance (Step 2)
+- [x] Report schemas, `reports`/`jobs` models, deterministic persistence (Step 3)
+- [x] Report API: `POST /cases/{id}/reports`, `GET /cases/{id}/reports`, `GET /reports/{id}/download` (Step 4)
+- [x] Report templating: sanitized HTML, deterministic JSON, PDF export (Step 5)
+- [x] Artifact storage + download without regeneration (`reports.file_path`)
+- [x] Report sanitization (XSS) tests
+- [x] Migrations `004_phase6_evidence.sql` and `005_phase6_reports_jobs.sql` prepared with rollbacks
+
+**Verification at closure:**
+- Phase 6 focused report suite: **78/78 PASS** (`test_report_aggregation`, `test_report_persistence`, `test_report_api`, `test_report_rendering`)
+- Step 5 export-rendering suite: **37/37 PASS**
+- Complete backend suite: **268/268 PASS**
+- Frontend suite: **9/9 PASS**; production build PASS (no regressions)
+- Secrets scan: CLEAN
+
+**Documented limitations / deferrals:**
+- PDF rendering uses the approved renderer path (`reportlab==5.0.1`). If no renderer library is installed, export fails explicitly with `PDF_RENDERER_UNAVAILABLE` and no PDF artifact is persisted — an unavailable renderer is never reported as a successful export.
+- Migrations 004/005 are **prepared but not yet applied to the live database** (connectivity unavailable at closure); apply when connectivity is restored.
+- Phase 6 **frontend report UI** (report generation UI, preview, download button, format selector) was explicitly excluded from the Phase 6 step authorization and remains deferred.
+
 ### Phase Gate
 
-**STOP after Phase 6 verification. Await explicit Phase 7 authorization.**
+**Phase 6 CLOSED ✅. STOP. Await explicit Phase 7 authorization — do NOT start Phase 7.**
 
 ---
 
@@ -1040,9 +1066,9 @@ Security audit, performance testing, regression testing, bug fixes, deployment p
 
 ## Roadmap Status
 
-**Last Updated:** 2026-09-24  
-**Current Phase:** Phase 5 — AI Copilot (CLOSED ✅ 2026-09-24)  
-**Next Phase:** Phase 6 — Reporting (NOT STARTED)
+**Last Updated:** 2026-09-25  
+**Current Phase:** Phase 6 — Reporting (CLOSED ✅ 2026-09-25)  
+**Next Phase:** Phase 7 — Hardening (NOT STARTED)
 
 **Phase 0 Completion Target:** 2026-09-24 (met 2026-09-22)  
 **MVP Completion Target:** 2026-12-01 (approximate)

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1 import cases, traces, risk, copilot
+from app.api.v1 import cases, traces, risk, copilot, reports
 
 app = FastAPI(
     title="LedgerLens API",
@@ -20,6 +20,7 @@ app.include_router(cases.router, prefix="/api/v1")
 app.include_router(traces.router, prefix="/api/v1")
 app.include_router(risk.router, prefix="/api/v1")
 app.include_router(copilot.router, prefix="/api/v1")
+app.include_router(reports.router, prefix="/api/v1")
 
 @app.get("/")
 async def root():
