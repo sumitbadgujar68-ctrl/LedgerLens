@@ -21,7 +21,7 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 
 ## Current Standing Active Agents (Phase 7 — IN PROGRESS)
 
-**Phase 7 note:** Phase 7 was authorized by MASTER / CTO on 2026-09-25. Per the progressive activation policy, the **Security Engineer is the first and currently only specialist activated**. QA Engineer, Release / Documentation Engineer and owning engineers remain on standby until their Phase 7 tasks begin.
+**Phase 7 note:** Phase 7 was authorized by MASTER / CTO on 2026-09-25. Per the progressive activation policy, specialists are activated one task at a time: the **Security Engineer** (TASK-P7-001/002) and, since 2026-09-25, the **QA / Test Engineer** (TASK-P7-003) are active. Release / Documentation Engineer and owning engineers remain on standby until their Phase 7 tasks begin.
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -56,6 +56,25 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - `docs/PHASE_7_SECURITY_AUDIT.md`
 - `backend/tests/test_security*.py`
 - Findings/reports only for files owned by other agents
+
+---
+
+### QA / TEST ENGINEER (ACTIVE — Phase 7)
+**Status:** Active  
+**Activated:** 2026-09-25 (TASK-P7-003; previously activated 2026-09-23 for Phase 3)  
+**Agent definition:** `.opencode/agents/qa.md`  
+**Responsibilities:**
+- Full regression execution (backend pytest, frontend vitest, lint, production build)
+- Edge-case and error-scenario coverage for Phase 6/7 paths (`SECURITY_MODEL.md` §17.1, audit §8)
+- Coverage verification, or a documented verification gap when tooling is unavailable
+- Regression report with exact counts from actual runs
+- Working-tree verification before any checkpoint
+
+**Ownership:**
+- `backend/tests/**` (regression suites; new edge/error tests)
+- `frontend/src/__tests__/**`, `frontend/tests/**`
+- `docs/PHASE_7_REGRESSION_REPORT.md`
+- `AGENTS.md` / `docs/STATUS.md` / `tasks/TASK_BOARD.md` — status lines only for this activation
 
 ---
 
@@ -308,6 +327,7 @@ Before activating any specialist agent, the MASTER must evaluate:
 | Risk Engineer | 2026-09-24 | Phase 4 Stage 4 | Explainable Risk Engine |
 | AI / Copilot Engineer | 2026-09-24 | Phase 5 | AI Copilot: grounding, tools, citations, safety, API, tests |
 | Security Engineer | 2026-09-25 | Phase 7 | Security audit, OWASP mapping, findings register |
+| QA / Test Engineer | 2026-09-25 | Phase 7 | TASK-P7-003 full regression, edge/error scenarios, verification gaps |
 
 ---
 
@@ -325,5 +345,6 @@ Before activating any specialist agent, the MASTER must evaluate:
 - Documented limitation: real LLM/provider behavior UNVERIFIED (no `OPENAI_API_KEY` configured)
 - Documented limitation: PDF export fails explicitly with `PDF_RENDERER_UNAVAILABLE` when no renderer library is installed (never reported as a successful export)
 - Migrations 004/005 prepared but not applied (DB connectivity unavailable)
-- Phase 7 is AUTHORIZED (2026-09-25) and IN PROGRESS — Security Engineer activated; Release / Documentation Engineer and QA Engineer still on standby
+- Phase 7 is AUTHORIZED (2026-09-25) and IN PROGRESS — Security Engineer activated (TASK-P7-001/002); QA / Test Engineer activated (TASK-P7-003); Release / Documentation Engineer still on standby
 - Do NOT activate Release / Documentation or other agents until their Phase 7 tasks begin
+- TASK-P7-003 report: `docs/PHASE_7_REGRESSION_REPORT.md` — backend 310/310, frontend 14/14, lint/build clean; coverage NOT MEASURED (GAP-COV-1); checkpoint commit NOT created pending MASTER review

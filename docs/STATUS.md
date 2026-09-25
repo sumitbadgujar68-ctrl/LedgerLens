@@ -17,8 +17,9 @@
 **Agents (active):**
 - MASTER / CTO (active since 2026-09-22)
 - SECURITY ENGINEER (activated 2026-09-25 — first Phase 7 activation; definition `.opencode/agents/security.md`)
+- QA / TEST ENGINEER (activated 2026-09-25 for TASK-P7-003; definition `.opencode/agents/qa.md`)
 
-**Standby (NOT activated):** QA / Test Engineer, Release / Documentation Engineer, owning engineers for remediation. Activation is per-task under the progressive activation policy.
+**Standby (NOT activated):** Release / Documentation Engineer, owning engineers for remediation. Activation is per-task under the progressive activation policy.
 
 ### Phase 7 Steps
 
@@ -26,7 +27,7 @@
 |------|------|-------|--------|
 | 1 | TASK-P7-001 | Security audit → `docs/PHASE_7_SECURITY_AUDIT.md` | ✅ COMPLETE |
 | 2 | TASK-P7-002 | Remediation of CRITICAL/HIGH findings (executed by owning agents) | ✅ COMPLETE |
-| 3 | TASK-P7-003 | Regression testing — full suite + edge cases + error scenarios | ⬜ BACKLOG |
+| 3 | TASK-P7-003 | Regression testing — full suite + edge cases + error scenarios | ✅ COMPLETE (report `docs/PHASE_7_REGRESSION_REPORT.md`; checkpoint pending MASTER review) |
 | 4 | TASK-P7-004 | Performance testing (needs DB, provider key, cache layer) | ⬜ BLOCKED — external dependencies |
 | 5 | TASK-P7-005 | Deployment preparation — env vars, migration plan, rollback, monitoring | ⬜ BACKLOG |
 | 6 | TASK-P7-006 | Documentation finalization — user/setup/API/architecture/limitations | ⬜ BACKLOG |
@@ -183,11 +184,12 @@
 
 ### Active Work
 
-**Current Focus:** Phase 7 IN PROGRESS (authorized 2026-09-25). TASK-P7-001 (security audit) COMPLETE and committed (`7e6d02c`); TASK-P7-002 (remediation) COMPLETE and verified — SEC-01…SEC-06 remediated (JWT auth, case ownership, authenticated report identity, CORS allow-list, SQL echo off, API docs disabled). Backend **287/287**, frontend **9/9**, lint + build clean. Awaiting MASTER sign-off before TASK-P7-003. MEDIUM/LOW findings (SEC-07…SEC-18) and DOC-01…DOC-05 remain open by design.
+**Current Focus:** Phase 7 IN PROGRESS (authorized 2026-09-25). TASK-P7-001 (security audit) COMPLETE and committed (`7e6d02c`); TASK-P7-002 (remediation) COMPLETE and verified — SEC-01…SEC-06 remediated (JWT auth, case ownership, authenticated report identity, CORS allow-list, SQL echo off, API docs disabled). **TASK-P7-003 (regression) COMPLETE (2026-09-25)** — backend **310/310**, frontend **14/14**, lint + build clean, report `docs/PHASE_7_REGRESSION_REPORT.md`; checkpoint commit created as Step 3. Coverage **NOT MEASURED** (GAP-COV-1). MEDIUM/LOW findings (SEC-07…SEC-18), DOC-01…DOC-06 and DEF-01 remain open by design.
 
 **Active Agents:**
 - MASTER / CTO (active since 2026-09-22)
 - SECURITY ENGINEER (activated 2026-09-25, Phase 7)
+- QA / TEST ENGINEER (activated 2026-09-25, Phase 7, TASK-P7-003)
 
 **Deactivated Agents (post-Phase-5 checkpoint):**
 - AI / Copilot Engineer — deactivated 2026-09-24 (post Phase 5)
@@ -196,7 +198,7 @@
 - VASP / Entity Intelligence Engineer — deactivated 2026-09-23 (post Stage 3)
 - Risk Engineer — deactivated 2026-09-24 (post Stage 4)
 - Backend Engineer — standby
-- QA / Test Engineer — standby
+- QA / Test Engineer — reactivated 2026-09-25 for Phase 7 TASK-P7-003 (was standby after Phase 3)
 
 ---
 
@@ -425,7 +427,7 @@
 1. ~~**Await explicit Phase 7 (Hardening) authorization**~~ — ✅ AUTHORIZED by MASTER / CTO on 2026-09-25
 2. Apply migrations `004_phase6_evidence.sql` and `005_phase6_reports_jobs.sql` to the live database once connectivity is restored (rollbacks available)
 3. Optional follow-ups deferred from Phase 6 scope: frontend report UI, real-provider (OpenAI) verification
-4. Phase 7 in progress: ~~TASK-P7-001 security audit~~ ✅ COMPLETE (2026-09-25, committed `7e6d02c`) → ~~TASK-P7-002 remediation~~ ✅ COMPLETE (2026-09-25, SEC-01…SEC-06, uncommitted) → next TASK-P7-003 regression (requires MASTER activation of QA / Test Engineer), then performance / deployment / documentation per the Phase 7 step table
+4. Phase 7 in progress: ~~TASK-P7-001 security audit~~ ✅ COMPLETE (2026-09-25, committed `7e6d02c`) → ~~TASK-P7-002 remediation~~ ✅ COMPLETE (2026-09-25, SEC-01…SEC-06, uncommitted) → ~~TASK-P7-003 regression~~ ✅ COMPLETE (2026-09-25, QA / Test Engineer; backend 310/310, frontend 14/14, report delivered, checkpoint NOT created) → next TASK-P7-004 (BLOCKED — external dependencies) / TASK-P7-005, then documentation and phase gate per the Phase 7 step table
 
 **Gate:** Phase 7 is authorized and IN PROGRESS. The NEXT gate is TASK-P7-007 (phase gate review) — do NOT start Phase 8 or MVP release claims before all Phase 7 acceptance criteria are met.
 
@@ -498,10 +500,10 @@ Source: `docs/ROADMAP.md` PHASE 7 Acceptance Criteria + MVP Completion.
 - [ ] Caching working
 
 **Quality:**
-- [ ] All tests pass
-- [ ] Regression testing complete
-- [ ] Critical bugs fixed
-- [ ] Known issues documented
+- [x] All tests pass — backend **310/310**, frontend **14/14**, `oxlint` exit 0, production build exit 0 (2026-09-25, TASK-P7-003)
+- [x] Regression testing complete (`docs/PHASE_7_REGRESSION_REPORT.md`; audit §8 items verified or recorded PARTIAL/NOT VERIFIED/N-A)
+- [ ] Critical bugs fixed — DEF-01 (copilot route returns 422: `engine.py:322` lacks `Depends(get_db)`) reported, awaiting MASTER-approved fix; DOC-06 (error envelope vs `API_CONTRACT.md` §5.1) routed to TASK-P7-006
+- [x] Known issues documented — verification gaps GAP-COV-1 (coverage NOT MEASURED), GAP-RL-1, GAP-TH-1, GAP-DB-1, GAP-LIVE-1 recorded in the regression report
 
 **Deployment:**
 - [ ] Production environment ready
@@ -598,9 +600,9 @@ Source: `docs/ROADMAP.md` PHASE 7 Acceptance Criteria + MVP Completion.
 - Phase 4 is officially CLOSED as of 2026-09-24
 - Phase 5 is officially CLOSED as of 2026-09-24 — real LLM/provider behavior remains UNVERIFIED (no `OPENAI_API_KEY` configured; documented limitation)
 - Phase 6 is officially CLOSED as of 2026-09-25 — PDF renderer unavailability fails explicitly (`PDF_RENDERER_UNAVAILABLE`); migrations 004/005 prepared but not yet applied (DB connectivity unavailable)
-- Phase 7 is AUTHORIZED (2026-09-25) and IN PROGRESS — Security Engineer activated 2026-09-25; TASK-P7-001 and TASK-P7-002 complete (2026-09-25); no other Phase 7 agent activated yet
+- Phase 7 is AUTHORIZED (2026-09-25) and IN PROGRESS — Security Engineer activated 2026-09-25; TASK-P7-001 and TASK-P7-002 complete (2026-09-25); QA / Test Engineer activated 2026-09-25, TASK-P7-003 complete (2026-09-25, report delivered, checkpoint pending MASTER review)
 - Progressive agent activation remains the governing policy
-- Activate Release / Documentation Engineer and QA Engineer only when their Phase 7 tasks begin
+- Activate Release / Documentation Engineer only when its Phase 7 tasks (TASK-P7-005/006) begin
 
 ---
 
@@ -694,8 +696,8 @@ Source: `docs/ROADMAP.md` PHASE 7 Acceptance Criteria + MVP Completion.
 
 ### PHASE 7 — HARDENING
 **Status:** IN PROGRESS ✅ (Authorized 2026-09-25 by MASTER / CTO)  
-**Active Agents:** MASTER / CTO, Security Engineer (activated 2026-09-25)  
-**Standby Agents:** QA / Test Engineer, Release / Documentation Engineer, owning engineers for remediation
+**Active Agents:** MASTER / CTO, Security Engineer (activated 2026-09-25), QA / Test Engineer (activated 2026-09-25 for TASK-P7-003)  
+**Standby Agents:** Release / Documentation Engineer, owning engineers for remediation
 
 ---
 

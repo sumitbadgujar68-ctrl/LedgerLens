@@ -48,19 +48,20 @@
 ---
 
 ### TASK-P7-003: Regression Testing (Phase 7 Step 3)
-**Owner:** QA / Test Engineer (activate at task start)  
-**Status:** BACKLOG ⬜  
+**Owner:** QA / Test Engineer (activated 2026-09-25; definition `.opencode/agents/qa.md`)  
+**Status:** COMPLETE ✅ — 2026-09-25 (report delivered; awaiting MASTER review before checkpoint)  
 **Objective:** Full end-to-end regression — all features, edge cases, error scenarios (`ROADMAP.md` Deliverables → Regression Testing).  
 **Dependencies:** TASK-P7-002 (so fixes are included)  
-**Files / Modules:** `backend/tests/**`, `frontend/src/__tests__/**`, `frontend/tests/**`  
+**Files / Modules:** `backend/tests/**`, `frontend/src/__tests__/**`, `frontend/tests/**`, `docs/PHASE_7_REGRESSION_REPORT.md`  
 **Acceptance Criteria:**
-- [ ] Full backend suite passes
-- [ ] Frontend suite passes and production build passes
-- [ ] Edge-case and error-scenario coverage added for Phase 6/7 paths
-- [ ] Coverage measured per `DEVELOPMENT_STANDARDS.md` §4 (80% backend / 70% frontend) or the gap recorded
-**Tests:** all  
+- [x] Full backend suite passes — **310/310 PASS** (baseline 287 preserved: 287 + 23 new = 310)
+- [x] Frontend suite passes and production build passes — **14/14 PASS** (baseline 9 + 5 new), `oxlint` exit 0, `tsc -b && vite build` exit 0
+- [x] Edge-case and error-scenario coverage added for Phase 6/7 paths — 23 backend (`backend/tests/test_security_edge_cases.py`) + 5 frontend (`frontend/src/__tests__/api.auth.test.ts`); audit §8 items 1, 2, 4, 5, 7, 8, 9, 10 VERIFIED, item 3 PARTIAL, item 6 NOT VERIFIED, item 11 N/A
+- [x] Coverage measured per `DEVELOPMENT_STANDARDS.md` §4 (80% backend / 70% frontend) or the gap recorded — **gap recorded**: GAP-COV-1, status NOT MEASURED (no coverage tooling installed; MASTER prohibited new dependencies for this task)
+**Tests:** all — backend 310, frontend 14, plus lint and production build  
 **Risks:** coverage tooling not installed — may require dependency approval (external)  
-**Output:** regression report with exact counts
+**Output:** `docs/PHASE_7_REGRESSION_REPORT.md` (exact counts, §8 matrix, verification gaps GAP-COV-1 / GAP-RL-1 / GAP-TH-1 / GAP-DB-1 / GAP-LIVE-1, findings DOC-06 and DEF-01 reported only)  
+**Result:** no baseline regression, no production code / schema / contract / dependency change; checkpoint commit NOT created — STOPPED for MASTER review.
 
 ---
 
@@ -686,20 +687,22 @@ Phase 7 prerequisite still outstanding: apply migrations `004_phase6_evidence.sq
 - **Phase 4 is officially CLOSED (2026-09-24)**
 - **Phase 5 is officially CLOSED (2026-09-24) — MASTER-authorized checkpoint**
 - **Phase 6 is officially CLOSED (2026-09-25) — MASTER-authorized checkpoint (Steps 1–6)**
-- **Phase 7 is AUTHORIZED (2026-09-25, MASTER / CTO) and IN PROGRESS — Security Engineer activated; TASK-P7-001 (security audit) COMPLETE (2026-09-25, committed `7e6d02c`); TASK-P7-002 (remediation) COMPLETE (2026-09-25, uncommitted) — next TASK-P7-003 pending MASTER activation**
+- **Phase 7 is AUTHORIZED (2026-09-25, MASTER / CTO) and IN PROGRESS — Security Engineer activated; TASK-P7-001 (security audit) COMPLETE (2026-09-25, committed `7e6d02c`); TASK-P7-002 (remediation) COMPLETE (2026-09-25, uncommitted); QA / Test Engineer activated; TASK-P7-003 (regression) COMPLETE (2026-09-25, uncommitted, report delivered) — next TASK-P7-004 (BLOCKED) / TASK-P7-005**
 - Phase-2 local suite: 41/41 tests PASS
 - Phase-4 local suite: 116/116 tests PASS
 - Phase-5 local suite: 190/190 tests PASS (116 pre-existing + 74 Phase 5)
 - Phase-5 dedicated suite: 74/74 tests PASS (12/12 acceptance categories explicit)
 - Phase-6 focused report suite: 78/78 tests PASS (Step 5 export-rendering subset: 37/37)
 - Phase-6 complete backend suite: 268/268 tests PASS
-- Frontend suite: 9/9 tests PASS, production build PASS
+- Phase-7 complete backend suite: **310/310 tests PASS** (2026-09-25: TASK-P7-002 baseline 287/287 + 23 new edge/error tests)
+- Frontend suite: **14/14 tests PASS** (2026-09-25, TASK-P7-003; Phase-6 baseline 9/9 preserved + 5 new auth/error tests), production build PASS, `oxlint` exit 0
+- Coverage: **NOT MEASURED** — GAP-COV-1 recorded in `docs/PHASE_7_REGRESSION_REPORT.md` (no coverage tooling installed; no dependency added)
 - No secrets or temporary environment files committed
 - **Documented limitation: real LLM/provider behavior UNVERIFIED (no `OPENAI_API_KEY` configured; provider mocked in tests)**
 - **Documented limitation: PDF export fails explicitly with `PDF_RENDERER_UNAVAILABLE` when no renderer library is installed — an unavailable renderer is never reported as a successful export**
 - Migration 002 & 003 file-complete but not yet applied to live Supabase
 - Migrations 004 (evidence) & 005 (reports/jobs) file-complete but not yet applied — DB connectivity unavailable; apply with rollbacks when connectivity is restored
-- Phase 7 agents are activated on demand: Security Engineer ACTIVE (2026-09-25); Release / Documentation Engineer activates when TASK-P7-005/006 begin; QA Engineer activates when TASK-P7-003 begins
+- Phase 7 agents are activated on demand: Security Engineer ACTIVE (2026-09-25); QA / Test Engineer ACTIVE (2026-09-25, TASK-P7-003); Release / Documentation Engineer activates when TASK-P7-005/006 begin
 - Phase 7 boundary: verification, remediation, deployment preparation and documentation only — no Phase 8 work, no new product features, no architecture/contract/schema redesign
 
 ---
