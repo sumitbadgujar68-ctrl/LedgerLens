@@ -1,5 +1,7 @@
 import React from 'react';
-import { Search, Plus } from 'lucide-react';
+import { LogOut, Search, Plus } from 'lucide-react';
+import { api } from '../../services/api';
+import { clearSession, notifyUnauthorized } from '../../services/auth';
 
 interface TopBarProps {
   onNewCase?: () => void;
@@ -7,6 +9,15 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({ onNewCase, title = 'Investigator Dispatch Console' }) => {
+  const handleSignOut = async () => {
+    try {
+      await api.logout();
+    } catch {
+      clearSession();
+    }
+    notifyUnauthorized();
+  };
+
   return (
     <header className="h-14 bg-[#090B10] border-b border-[#1F2637] px-6 flex items-center justify-between shrink-0">
       <div className="flex items-center gap-4">
@@ -38,6 +49,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onNewCase, title = 'Investigator
             <span>New Investigation</span>
           </button>
         )}
+
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-[#1F2637] hover:border-slate-500 text-slate-300 rounded text-xs font-semibold transition-colors cursor-pointer"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>Sign out</span>
+        </button>
       </div>
     </header>
   );

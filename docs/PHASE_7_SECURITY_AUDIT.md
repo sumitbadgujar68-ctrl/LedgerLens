@@ -5,7 +5,7 @@
 **Date:** 2026-09-25  
 **Audited revision:** `ccb71ab` — "Phase 6 COMPLETE: investigation reporting and export pipeline" (branch `master`, working tree clean)  
 **Authoritative requirements:** `docs/SECURITY_MODEL.md`, `docs/ARCHITECTURE.md` §8.4/§8.5/§9.1, `docs/API_CONTRACT.md` §3/§5/§9/§11, `docs/DATA_MODEL.md` §12, `docs/DEVELOPMENT_STANDARDS.md` §6/§7/§10, `docs/MASTER_BOOTSTRAP.md` §18  
-**Status:** AUDIT COMPLETE — remediation is TASK-P7-002 (not started)  
+**Status:** AUDIT COMPLETE (2026-09-25) — TASK-P7-002 remediation applied for SEC-01…SEC-06 (record in §11); MEDIUM/LOW findings still open
 **Approval required:** MASTER / CTO before remediation begins
 
 ---
@@ -235,7 +235,7 @@ Ownership: test authorship belongs to the owning engineer + QA Engineer; Securit
 
 ---
 
-## 10. Remediation Plan (maps to TASK-P7-002 — not yet started)
+## 10. Remediation Plan (maps to TASK-P7-002 — APPLIED 2026-09-25, see §11)
 
 | Priority | Findings | Suggested task grouping | Prerequisite |
 |---|---|---|---|
@@ -253,13 +253,56 @@ Ownership: test authorship belongs to the owning engineer + QA Engineer; Securit
 
 ---
 
-## 11. Audit Sign-off
+## 11. Remediation Record — TASK-P7-002 (applied 2026-09-25)
+
+**Approved scope (MASTER / CTO):** SEC-01 and SEC-02 first, then the remaining CRITICAL/HIGH set; no performance, regression, deployment or unrelated Phase 7 work; existing Phase 1-6 functionality and tests preserved; only changes required by the documented findings; stop after verification.
+
+**No dependency, migration, contract or schema change was introduced.** JWT comes from `python-jose` and hashing from `bcrypt`, both already declared in `backend/requirements.txt` (this also resolves SEC-13's "unused auth dependencies").
+
+| Finding | Change | Evidence |
+|---|---|---|
+| SEC-01 | JWT bearer authentication on every data router; `require_auth` applied at router level so no endpoint can be added unprotected by accident; `/api/v1/auth/login`, `/logout`, `/me` implemented per `API_CONTRACT.md` §3.2; only `/` and `/health` stay public | `backend/app/main.py:25-33`, `backend/app/services/auth/deps.py:41-69`, `backend/app/api/v1/auth.py:37-122`, `backend/app/services/auth/security.py`, `backend/app/services/auth/service.py` |
+| SEC-02 | `require_case_ownership` (403 `CASE_ACCESS_DENIED`) enforced on cases (get/update), all 3 trace routes, all 3 risk routes, all 3 copilot routes, and reports (create/list/download); `list`/`create` are scoped to the caller | `backend/app/services/auth/deps.py:94-99`, `backend/app/api/v1/cases.py:47,70`, `traces.py:199,240,265`, `risk.py:116,194,215`, `copilot.py:60-68,94,127,161`, `reports.py:86,158,197` |
+| SEC-03 | Report chain of custody now records the authenticated investigator (`create_job`, `generated_by`, `save_report`); `MOCK_INVESTIGATOR_ID` no longer used by any endpoint | `backend/app/api/v1/reports.py:83,94,96`, `backend/app/api/v1/cases.py:35,60` |
+| SEC-04 | CORS restricted to `CORS_ALLOWED_ORIGINS` (default `http://localhost:3000,http://127.0.0.1:3000`), methods/headers allow-listed, no wildcard | `backend/app/main.py:17-23`, `backend/app/config.py` (`cors_allowed_origins`, `cors_origins`) |
+| SEC-05 | SQLAlchemy statement logging off by default (`SQL_ECHO=false`), opt-in via environment | `backend/app/db/database.py:7`, `backend/app/config.py` (`sql_echo`), `backend/.env.example` |
+| SEC-06 | `/docs`, `/redoc`, `/openapi.json` disabled unless `ENABLE_DOCS=true` | `backend/app/main.py:12-14`, `backend/.env.example` |
+
+**Frontend (required so the application still functions once SEC-01 lands):** `Authorization: Bearer` header attached centrally in `frontend/src/services/api.ts`; 401 clears the session and returns the UI to sign-in; `LoginPage` gate in `frontend/src/App.tsx`; sign-out control in `frontend/src/components/layout/TopBar.tsx`. Token storage uses `localStorage`, the option explicitly allowed by `SECURITY_MODEL.md` §9.2 ("secure localStorage with XSS protections"); `API_CONTRACT.md` §3.1 mandates the Authorization header, which rules out the HttpOnly-cookie option.
+
+**Operational bootstrap:** `backend/scripts/create_investigator.py` creates/resets an investigator (password from `INVESTIGATOR_PASSWORD` or interactive prompt — never a CLI argument), because no credential store existed.
+
+**Verification (all executed 2026-09-25):**
+
+| Check | Result |
+|---|---|
+| Backend suite `python -m pytest -q` | **287/287 passed** (268 pre-existing + 19 new) |
+| New security tests `backend/tests/test_security_auth.py` | 19 passed: missing/malformed/expired token → 401; valid token → 200; `/health`+`/` public; login success/wrong password/unknown user; `/auth/me`; password + token unit checks; foreign case → 403, owned case → 200; report download → 403; copilot → 403; `/docs`+`/redoc`+`/openapi.json` → 404; CORS allowed vs denied origin |
+| Frontend `npx vitest run` | 9/9 passed (unchanged) |
+| Frontend `npm run lint` (oxlint) | exit 0 |
+| Frontend `npm run build` (`tsc -b && vite build`) | exit 0 |
+| Route inventory | 19 API routes (16 protected + 3 auth), `/` and `/health` public, docs routes absent, CORS allow-list confirmed |
+
+**Pre-existing test-suite accommodation:** `backend/tests/conftest.py` (new) overrides only the principal dependency so the 268 existing tests keep exercising their original route logic as the fixture owner; no existing assertion was changed. One fixture in `backend/tests/test_copilot.py` (`_override_get_db_stub`) now returns an owned case so the copilot API tests exercise their documented 503/502/200 paths against the new ownership check — the three `*_nonexistent_case_returns_404` tests still assert `CASE_NOT_FOUND`.
+
+**Not remediated (unchanged from §6/§10):** all MEDIUM findings SEC-07…SEC-14, all LOW findings SEC-15…SEC-18, documentation discrepancies DOC-01…DOC-05 (→ TASK-P7-006), and dependency-scan / dynamic / DB-level checks NV-01…NV-05.
+
+**Limitations introduced or newly observed:**
+1. Real-database login/authorization could not be executed (no DB connectivity); login, `/auth/me` and ownership are verified against request stubs only.
+2. Logout is stateless: JWTs are not revoked server-side (no denylist store available) — token expiry remains the backstop.
+3. Account lockout after 5 failed attempts (`SECURITY_MODEL.md` §5.1) is not implemented — it was not in this register and requires persistence for attempt counters.
+4. `GET /` remains public and still reports the stale Phase 5 string (SEC-15, deferred).
+5. **Pre-existing defect found during remediation, not fixed (out of approved scope):** `backend/app/services/ai/engine.py:322` — `get_copilot_engine(db)` lacks `Depends(get_db)`, so FastAPI reads `db` as a required query parameter and un-overridden copilot API calls return 422. Functional, not security. Requires a separate MASTER-approved fix.
+
+---
+
+## 12. Audit Sign-off
 
 - Findings are evidence-based: every entry cites `file:line` or a verified command result.
 - No control is reported as passing unless it was executed/inspected in this session.
 - Checks that could not run are listed in §6 as **NOT VERIFIED** with their external dependency.
-- The audit modified no product code.
+- The audit itself modified no product code; the §11 remediation was applied only after explicit MASTER / CTO approval.
 
 **Prepared by:** Security Engineer (Phase 7, activated 2026-09-25)  
-**Reviewed by:** ⬜ MASTER / CTO — approval required before TASK-P7-002 remediation begins  
-**Next task:** TASK-P7-002 — Security Remediation (BACKLOG, awaiting MASTER approval of this register)
+**Approved by:** ✅ MASTER / CTO — 2026-09-25 (audit checkpoint committed as `7e6d02c`; TASK-P7-002 authorized with SEC-01/SEC-02 priority, CRITICAL+HIGH scope)  
+**Next task:** TASK-P7-003 (regression) / TASK-P7-004…007 — **not started**, awaiting MASTER instruction; MEDIUM/LOW findings and DOC-01…DOC-05 remain open

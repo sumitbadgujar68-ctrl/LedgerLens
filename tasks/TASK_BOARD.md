@@ -29,18 +29,21 @@
 
 ### TASK-P7-002: Security Remediation (Phase 7 Step 2)
 **Owner:** Owning agents per finding (Backend / Frontend / Database / MASTER) — assigned by MASTER  
-**Status:** BACKLOG ⬜  
+**Status:** COMPLETE ✅ — 2026-09-25 (verified; awaiting MASTER sign-off)  
 **Objective:** Remediate CRITICAL and HIGH findings from TASK-P7-001; document deferred MEDIUM/LOW items.  
 **Dependencies:** TASK-P7-001 complete + MASTER review of findings register  
 **Files / Modules:** as specified per finding (ownership rules in `AGENTS.md`)  
 **Acceptance Criteria:**
-- [ ] All CRITICAL findings remediated and re-verified
-- [ ] All HIGH findings remediated or explicitly deferred with MASTER approval
-- [ ] No architecture/contract/schema change outside approved remediation
-- [ ] Existing suites remain green (backend 268+, frontend 9+)
-**Tests:** regression suites + any new security tests specified in the audit  
+- [x] All CRITICAL findings remediated and re-verified (SEC-01, SEC-02)
+- [x] All HIGH findings remediated or explicitly deferred with MASTER approval (SEC-03, SEC-04, SEC-05, SEC-06 all remediated — no HIGH deferred)
+- [x] No architecture/contract/schema change outside approved remediation (no migration, no API contract redesign, no dependency added: JWT via `python-jose` + `bcrypt`, both already in `requirements.txt`)
+- [x] Existing suites remain green (backend 287/287 incl. 19 new security tests; frontend 9/9; `oxlint` exit 0; `tsc -b && vite build` exit 0)
+**Tests:** 19 new tests in `backend/tests/test_security_auth.py` (401 missing/malformed/expired token, valid token 200, public `/health`+`/`, login success/wrong password/unknown user, `/auth/me`, password+token units, case 403 non-owner / 200 owner, report download 403, copilot 403, docs 404, CORS allowed/denied origin)  
 **Risks:** fixes touching shared files must be sequenced to avoid ownership conflicts  
-**Output:** code fixes + updated findings statuses
+**Output:** code fixes + updated findings statuses  
+**Findings remediated:** SEC-01 (JWT auth on all 16 data routers, `/health` + `/` public), SEC-02 (case ownership checks on cases, traces, risk, copilot, reports incl. download), SEC-03 (report `initiated_by`/`generated_by`/`save_report` now use the authenticated principal instead of `MOCK_INVESTIGATOR_ID`), SEC-04 (CORS allow-list from `CORS_ALLOWED_ORIGINS`), SEC-05 (`SQL_ECHO=false` default), SEC-06 (`ENABLE_DOCS=false` default: `/docs`, `/redoc`, `/openapi.json` return 404)  
+**Deferred (unchanged):** all MEDIUM (SEC-07…SEC-14) and LOW (SEC-15…SEC-18) findings per audit §10, plus DOC-01…DOC-05 → TASK-P7-006  
+**Newly discovered (not in the audit register):** `backend/app/services/ai/engine.py:322` — `get_copilot_engine(db)` declares `db` without `Depends(get_db)`, so FastAPI treats it as a required query parameter and every copilot API call that does not override the dependency returns 422. Pre-existing Phase 5 defect, functional not security; **not fixed** (outside approved remediation scope) — MASTER decision required.
 
 ---
 
@@ -683,7 +686,7 @@ Phase 7 prerequisite still outstanding: apply migrations `004_phase6_evidence.sq
 - **Phase 4 is officially CLOSED (2026-09-24)**
 - **Phase 5 is officially CLOSED (2026-09-24) — MASTER-authorized checkpoint**
 - **Phase 6 is officially CLOSED (2026-09-25) — MASTER-authorized checkpoint (Steps 1–6)**
-- **Phase 7 is AUTHORIZED (2026-09-25, MASTER / CTO) and IN PROGRESS — Security Engineer activated; TASK-P7-001 (security audit) COMPLETE (2026-09-25), next TASK-P7-002 pending MASTER review**
+- **Phase 7 is AUTHORIZED (2026-09-25, MASTER / CTO) and IN PROGRESS — Security Engineer activated; TASK-P7-001 (security audit) COMPLETE (2026-09-25, committed `7e6d02c`); TASK-P7-002 (remediation) COMPLETE (2026-09-25, uncommitted) — next TASK-P7-003 pending MASTER activation**
 - Phase-2 local suite: 41/41 tests PASS
 - Phase-4 local suite: 116/116 tests PASS
 - Phase-5 local suite: 190/190 tests PASS (116 pre-existing + 74 Phase 5)

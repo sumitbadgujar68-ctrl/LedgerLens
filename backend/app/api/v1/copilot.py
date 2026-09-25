@@ -21,6 +21,12 @@ from app.services.ai.engine import (
     ProviderNotConfiguredError,
     get_copilot_engine,
 )
+from app.services.auth.deps import (
+    Principal,
+    get_current_principal,
+    require_case_ownership,
+)
+from app.services.case_service import CaseService
 
 logger = logging.getLogger("ledgerlens.api.copilot")
 
@@ -50,6 +56,18 @@ def _handle_engine_exceptions(case_id: UUID, e: Exception) -> None:
     )
 
 
+async def _require_case_access(
+    db: AsyncSession, case_id: UUID, principal: Principal
+) -> None:
+    case = await CaseService.get_case(db, case_id)
+    if not case:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
+        )
+    require_case_ownership(case, principal, case_id)
+
+
 @router.post(
     "/{case_id}/copilot/ask",
     response_model=CopilotAskResponse,
@@ -67,11 +85,13 @@ async def ask_copilot(
     trace_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
     engine: CopilotEngine = Depends(get_copilot_engine),
+    principal: Principal = Depends(get_current_principal),
 ):
     """
     Ask the AI copilot a question about the case.
     The copilot answers grounded in case data with citations.
     """
+    await _require_case_access(db, case_id, principal)
     try:
         result = await engine.ask(case_id, request.question, trace_id)
         return CopilotAskResponse(**result)
@@ -99,10 +119,12 @@ async def summarize_case(
     trace_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
     engine: CopilotEngine = Depends(get_copilot_engine),
+    principal: Principal = Depends(get_current_principal),
 ):
     """
     Generate a comprehensive summary of the case investigation.
     """
+    await _require_case_access(db, case_id, principal)
     try:
         result = await engine.summarize(case_id, trace_id)
         return CopilotSummarizeResponse(**result)
@@ -131,10 +153,12 @@ async def explain_risk(
     request: CopilotExplainRiskRequest,
     db: AsyncSession = Depends(get_db),
     engine: CopilotEngine = Depends(get_copilot_engine),
+    principal: Principal = Depends(get_current_principal),
 ):
     """
     Explain the risk score for a specific wallet in the case.
     """
+    await _require_case_access(db, case_id, principal)
     try:
         result = await engine.explain_risk(case_id, request.wallet_address, request.trace_id)
         return CopilotExplainRiskResponse(**result)

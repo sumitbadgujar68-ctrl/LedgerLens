@@ -26,6 +26,7 @@ Section classes above provide the detailed unit coverage per category;
 """
 
 import json
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
@@ -34,8 +35,10 @@ import pytest
 from httpx import AsyncClient
 
 from app.main import app
+from app.api.v1.cases import MOCK_INVESTIGATOR_ID
 from app.api.v1.copilot import get_copilot_engine
 from app.db.database import get_db
+from app.db.models import Case
 from app.models.copilot_schemas import (
     CopilotAskRequest,
     CopilotAskResponse,
@@ -294,8 +297,23 @@ def _make_engine(
     return engine
 
 
+def _owned_case() -> Case:
+    return Case(
+        case_id=CASE_ID,
+        case_number="CASE-2026-000001",
+        title="Phase 5 Test Case",
+        reported_wallet_address=WALLET,
+        blockchain="ethereum",
+        fraud_type="investment_scam",
+        investigator_id=MOCK_INVESTIGATOR_ID,
+        status="active",
+        created_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+        updated_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+    )
+
+
 async def _override_get_db_stub():
-    yield StubDB()
+    yield StubDB(case=_owned_case())
 
 
 def _override_engine_none():

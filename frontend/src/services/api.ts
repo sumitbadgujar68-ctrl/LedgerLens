@@ -1,4 +1,6 @@
 import type { Case, CaseCreatePayload, TraceRequestPayload, TraceResponse } from '../types';
+import { getToken, notifyUnauthorized } from './auth';
+import type { Investigator, LoginResponse } from './auth';
 
 const API_BASE = '/api/v1';
 
@@ -16,8 +18,10 @@ export class ApiError extends Error {
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
+  const token = getToken();
   const headers = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
 
@@ -30,9 +34,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     } catch {
       // ignore
     }
-    const message = errorData?.error?.message || errorData?.detail || `HTTP error ${response.status}: ${response.statusText}`;
-    const code = errorData?.error?.code;
-    const details = errorData?.error?.details;
+    const envelope = errorData?.error || errorData?.detail?.error;
+    const message = envelope?.message || errorData?.detail?.message || `HTTP error ${response.status}: ${response.statusText}`;
+    const code = envelope?.code;
+    const details = errorData?.error?.details || errorData?.detail?.error?.details;
+    if (response.status === 401) {
+      notifyUnauthorized();
+    }
     throw new ApiError(message, code, details);
   }
 
@@ -79,5 +87,20 @@ export const api = {
 
   async getTraceById(caseId: string, traceId: string): Promise<TraceResponse> {
     return request<TraceResponse>(`/cases/${caseId}/traces/${traceId}`);
+  },
+
+  async login(username: string, password: string): Promise<LoginResponse> {
+    return request<LoginResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  },
+
+  async logout(): Promise<{ message: string }> {
+    return request<{ message: string }>('/auth/logout', { method: 'POST' });
+  },
+
+  async me(): Promise<Investigator> {
+    return request<Investigator>('/auth/me');
   },
 };

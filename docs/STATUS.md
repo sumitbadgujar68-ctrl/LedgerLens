@@ -25,7 +25,7 @@
 | Step | Task | Scope | Status |
 |------|------|-------|--------|
 | 1 | TASK-P7-001 | Security audit → `docs/PHASE_7_SECURITY_AUDIT.md` | ✅ COMPLETE |
-| 2 | TASK-P7-002 | Remediation of CRITICAL/HIGH findings (executed by owning agents) | ⬜ BACKLOG |
+| 2 | TASK-P7-002 | Remediation of CRITICAL/HIGH findings (executed by owning agents) | ✅ COMPLETE |
 | 3 | TASK-P7-003 | Regression testing — full suite + edge cases + error scenarios | ⬜ BACKLOG |
 | 4 | TASK-P7-004 | Performance testing (needs DB, provider key, cache layer) | ⬜ BLOCKED — external dependencies |
 | 5 | TASK-P7-005 | Deployment preparation — env vars, migration plan, rollback, monitoring | ⬜ BACKLOG |
@@ -183,7 +183,7 @@
 
 ### Active Work
 
-**Current Focus:** Phase 7 IN PROGRESS (authorized 2026-09-25). TASK-P7-001 (security audit) COMPLETE — `docs/PHASE_7_SECURITY_AUDIT.md` (18 findings: 2 CRITICAL / 4 HIGH / 8 MEDIUM / 4 LOW; 11 verified controls; 5 checks NOT VERIFIED due to external dependencies). Awaiting MASTER review before TASK-P7-002 remediation. No remediation, regression, performance or deployment work has begun.
+**Current Focus:** Phase 7 IN PROGRESS (authorized 2026-09-25). TASK-P7-001 (security audit) COMPLETE and committed (`7e6d02c`); TASK-P7-002 (remediation) COMPLETE and verified — SEC-01…SEC-06 remediated (JWT auth, case ownership, authenticated report identity, CORS allow-list, SQL echo off, API docs disabled). Backend **287/287**, frontend **9/9**, lint + build clean. Awaiting MASTER sign-off before TASK-P7-003. MEDIUM/LOW findings (SEC-07…SEC-18) and DOC-01…DOC-05 remain open by design.
 
 **Active Agents:**
 - MASTER / CTO (active since 2026-09-22)
@@ -425,7 +425,7 @@
 1. ~~**Await explicit Phase 7 (Hardening) authorization**~~ — ✅ AUTHORIZED by MASTER / CTO on 2026-09-25
 2. Apply migrations `004_phase6_evidence.sql` and `005_phase6_reports_jobs.sql` to the live database once connectivity is restored (rollbacks available)
 3. Optional follow-ups deferred from Phase 6 scope: frontend report UI, real-provider (OpenAI) verification
-4. Phase 7 in progress: ~~TASK-P7-001 security audit~~ ✅ COMPLETE (2026-09-25) → next TASK-P7-002 remediation (requires MASTER review of the findings register), then regression / performance / deployment / documentation per the Phase 7 step table
+4. Phase 7 in progress: ~~TASK-P7-001 security audit~~ ✅ COMPLETE (2026-09-25, committed `7e6d02c`) → ~~TASK-P7-002 remediation~~ ✅ COMPLETE (2026-09-25, SEC-01…SEC-06, uncommitted) → next TASK-P7-003 regression (requires MASTER activation of QA / Test Engineer), then performance / deployment / documentation per the Phase 7 step table
 
 **Gate:** Phase 7 is authorized and IN PROGRESS. The NEXT gate is TASK-P7-007 (phase gate review) — do NOT start Phase 8 or MVP release claims before all Phase 7 acceptance criteria are met.
 
@@ -487,7 +487,7 @@ Source: `docs/ROADMAP.md` PHASE 7 Acceptance Criteria + MVP Completion.
 
 **Security:**
 - [x] Security audit complete (`docs/PHASE_7_SECURITY_AUDIT.md`, 2026-09-25)
-- [ ] Critical vulnerabilities remediated (SEC-01/SEC-02 — TASK-P7-002)
+- [x] Critical vulnerabilities remediated (SEC-01/SEC-02 + HIGH SEC-03…SEC-06 — TASK-P7-002, verified 287/287)
 - [x] Secrets management verified (audit V-01, V-02 — env-only, no committed secrets)
 - [x] No hardcoded credentials (audit V-01 — repo scan clean)
 
@@ -598,7 +598,7 @@ Source: `docs/ROADMAP.md` PHASE 7 Acceptance Criteria + MVP Completion.
 - Phase 4 is officially CLOSED as of 2026-09-24
 - Phase 5 is officially CLOSED as of 2026-09-24 — real LLM/provider behavior remains UNVERIFIED (no `OPENAI_API_KEY` configured; documented limitation)
 - Phase 6 is officially CLOSED as of 2026-09-25 — PDF renderer unavailability fails explicitly (`PDF_RENDERER_UNAVAILABLE`); migrations 004/005 prepared but not yet applied (DB connectivity unavailable)
-- Phase 7 is AUTHORIZED (2026-09-25) and IN PROGRESS — Security Engineer activated 2026-09-25; no other Phase 7 agent activated yet
+- Phase 7 is AUTHORIZED (2026-09-25) and IN PROGRESS — Security Engineer activated 2026-09-25; TASK-P7-001 and TASK-P7-002 complete (2026-09-25); no other Phase 7 agent activated yet
 - Progressive agent activation remains the governing policy
 - Activate Release / Documentation Engineer and QA Engineer only when their Phase 7 tasks begin
 

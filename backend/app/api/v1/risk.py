@@ -13,6 +13,11 @@ from app.models.risk_schemas import (
     RiskScoreResponse,
     RiskSummaryResponse,
 )
+from app.services.auth.deps import (
+    Principal,
+    get_current_principal,
+    require_case_ownership,
+)
 from app.services.graph.model import CanonicalGraph
 from app.services.risk.engine import RiskEngine
 from app.services.tracing.service import TraceService
@@ -99,6 +104,7 @@ async def get_wallet_risk(
     wallet_address: str,
     trace_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
+    principal: Principal = Depends(get_current_principal),
 ):
     case = await db.execute(select(Case).where(Case.case_id == case_id))
     case_obj = case.scalar_one_or_none()
@@ -107,6 +113,7 @@ async def get_wallet_risk(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
+    require_case_ownership(case_obj, principal, case_id)
 
     trace: Optional[TraceRun] = None
     if trace_id:
@@ -168,6 +175,7 @@ async def get_wallet_risk(
 async def get_risk_explanation(
     risk_id: UUID,
     db: AsyncSession = Depends(get_db),
+    principal: Principal = Depends(get_current_principal),
 ):
     risk_result = await db.execute(
         select(RiskScoreRecord).where(RiskScoreRecord.risk_score_id == risk_id)
@@ -180,6 +188,13 @@ async def get_risk_explanation(
             detail={"error": {"code": "RISK_NOT_FOUND", "message": f"Risk score {risk_id} not found"}},
         )
 
+    case_result = await db.execute(
+        select(Case).where(Case.case_id == risk_record.case_id)
+    )
+    require_case_ownership(
+        case_result.scalar_one_or_none(), principal, risk_record.case_id
+    )
+
     return _build_explanation_response(risk_record)
 
 
@@ -188,6 +203,7 @@ async def get_case_risk_summary(
     case_id: UUID,
     trace_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
+    principal: Principal = Depends(get_current_principal),
 ):
     case = await db.execute(select(Case).where(Case.case_id == case_id))
     case_obj = case.scalar_one_or_none()
@@ -196,6 +212,7 @@ async def get_case_risk_summary(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
+    require_case_ownership(case_obj, principal, case_id)
 
     trace: Optional[TraceRun] = None
     if trace_id:

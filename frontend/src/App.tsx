@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Sidebar } from './components/layout/Sidebar';
@@ -5,6 +6,8 @@ import { Dashboard } from './components/dashboard/Dashboard';
 import { InvestigationWorkspace } from './components/workspace/InvestigationWorkspace';
 import { EvidenceCustody } from './components/evidence/EvidenceCustody';
 import { Settings } from './components/settings/Settings';
+import { LoginPage } from './components/auth/LoginPage';
+import { getToken, UNAUTHORIZED_EVENT } from './services/auth';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,24 +20,36 @@ const queryClient = new QueryClient({
 });
 
 export function App() {
+  const [authenticated, setAuthenticated] = useState<boolean>(() => Boolean(getToken()));
+
+  useEffect(() => {
+    const handleUnauthorized = () => setAuthenticated(false);
+    window.addEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, handleUnauthorized);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <div className="flex h-screen w-screen overflow-hidden bg-[#090B10] text-slate-100 font-sans">
-          <Sidebar />
+      {!authenticated ? (
+        <LoginPage onSuccess={() => setAuthenticated(true)} />
+      ) : (
+        <BrowserRouter>
+          <div className="flex h-screen w-screen overflow-hidden bg-[#090B10] text-slate-100 font-sans">
+            <Sidebar />
 
-          <div className="flex-1 flex flex-col h-full overflow-hidden">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/cases" element={<Navigate to="/" replace />} />
-              <Route path="/cases/:caseId" element={<InvestigationWorkspace />} />
-              <Route path="/evidence" element={<EvidenceCustody />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <div className="flex-1 flex flex-col h-full overflow-hidden">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/cases" element={<Navigate to="/" replace />} />
+                <Route path="/cases/:caseId" element={<InvestigationWorkspace />} />
+                <Route path="/evidence" element={<EvidenceCustody />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </div>
           </div>
-        </div>
-      </BrowserRouter>
+        </BrowserRouter>
+      )}
     </QueryClientProvider>
   );
 }

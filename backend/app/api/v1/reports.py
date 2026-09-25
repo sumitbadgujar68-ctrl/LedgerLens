@@ -15,8 +15,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.cases import MOCK_INVESTIGATOR_ID
 from app.db.database import get_db
+from app.services.auth.deps import (
+    Principal,
+    get_current_principal,
+    require_case_ownership,
+)
 from app.models.report_schemas import (
     ErrorResponse,
     ReportGenerateRequest,
@@ -70,14 +74,16 @@ async def create_report(
     db: AsyncSession = Depends(get_db),
     store: ReportStore = Depends(get_report_store),
     generator: ReportGenerator = Depends(get_report_generator),
+    principal: Principal = Depends(get_current_principal),
 ):
     """Generate an investigation report for a case and queue the job."""
     case = await CaseService.get_case(db, case_id)
     if not case:
         raise _case_not_found(case_id)
+    require_case_ownership(case, principal, case_id)
 
     job = await store.create_job(
-        case_id, request.report_type, request.format, MOCK_INVESTIGATOR_ID
+        case_id, request.report_type, request.format, principal.investigator_id
     )
     await store.mark_job_started(job)
     try:
@@ -85,9 +91,9 @@ async def create_report(
             case_id,
             request.report_type,
             request.format,
-            generated_by=MOCK_INVESTIGATOR_ID,
+            generated_by=principal.investigator_id,
         )
-        record = await store.save_report(report, MOCK_INVESTIGATOR_ID)
+        record = await store.save_report(report, principal.investigator_id)
         await store.mark_job_completed(job, result={"report_id": str(record.report_id)})
         await db.commit()
     except ReportCaseNotFoundError as e:
@@ -143,11 +149,13 @@ async def list_reports(
     case_id: UUID,
     db: AsyncSession = Depends(get_db),
     store: ReportStore = Depends(get_report_store),
+    principal: Principal = Depends(get_current_principal),
 ):
     """List all reports for a case, newest first."""
     case = await CaseService.get_case(db, case_id)
     if not case:
         raise _case_not_found(case_id)
+    require_case_ownership(case, principal, case_id)
 
     records = await store.get_reports_for_case(case_id)
     items = [
@@ -175,6 +183,7 @@ async def download_report(
     report_id: UUID,
     db: AsyncSession = Depends(get_db),
     store: ReportStore = Depends(get_report_store),
+    principal: Principal = Depends(get_current_principal),
 ):
     """Download the persisted report exactly as stored (no regeneration)."""
     record = await store.get_report(report_id)
@@ -183,6 +192,10 @@ async def download_report(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "REPORT_NOT_FOUND", "message": f"Report {report_id} not found"}},
         )
+
+    case = await CaseService.get_case(db, record.case_id)
+    require_case_ownership(case, principal, record.case_id)
+
     if record.content is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -194,8 +207,7 @@ async def download_report(
             },
         )
 
-    case = await CaseService.get_case(db, record.case_id)
-    case_number = case.case_number if case else str(record.report_id)
+    case_number = case.case_number
     filename = f"{case_number}_report.{record.format}"
     media_type = DOWNLOAD_MEDIA_TYPES.get(record.format, "application/octet-stream")
     headers = {"Content-Disposition": f'attachment; filename="{filename}"'}

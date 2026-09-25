@@ -17,6 +17,11 @@ from app.models.trace_schemas import (
     TraceResponse,
     TraceSummaryResponse,
 )
+from app.services.auth.deps import (
+    Principal,
+    get_current_principal,
+    require_case_ownership,
+)
 from app.services.blockchain import BlockchainAdapter, TransferDirection, TransferQuery
 from app.services.graph.model import TraceConfig
 from app.services.tracing.service import TraceService
@@ -183,6 +188,7 @@ async def create_trace(
     request: Optional[TraceRequest] = None,
     db: AsyncSession = Depends(get_db),
     service: TraceService = Depends(get_trace_service),
+    principal: Principal = Depends(get_current_principal),
 ):
     case = await service.get_case(db, case_id)
     if not case:
@@ -190,6 +196,7 @@ async def create_trace(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
+    require_case_ownership(case, principal, case_id)
 
     body = request or TraceRequest()
     if body.start_wallet_address is None:
@@ -222,6 +229,7 @@ async def get_trace(
     trace_id: UUID,
     db: AsyncSession = Depends(get_db),
     service: TraceService = Depends(get_trace_service),
+    principal: Principal = Depends(get_current_principal),
 ):
     case = await service.get_case(db, case_id)
     if not case:
@@ -229,6 +237,7 @@ async def get_trace(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
+    require_case_ownership(case, principal, case_id)
     trace = await service.get_trace(db, case_id, trace_id)
     if not trace:
         raise HTTPException(
@@ -245,6 +254,7 @@ async def list_traces(
     limit: int = 20,
     db: AsyncSession = Depends(get_db),
     service: TraceService = Depends(get_trace_service),
+    principal: Principal = Depends(get_current_principal),
 ):
     case = await service.get_case(db, case_id)
     if not case:
@@ -252,6 +262,7 @@ async def list_traces(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
+    require_case_ownership(case, principal, case_id)
     traces = await service.list_traces(db, case_id, limit=limit)
     responses = []
     for trace in traces:
