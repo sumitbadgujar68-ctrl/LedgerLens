@@ -1,12 +1,42 @@
 # LedgerLens Project Status
 
 **Last Updated:** 2026-09-25  
-**Current Phase:** PHASE 6 — REPORTING (CLOSED ✅) — NEXT: PHASE 7 (NOT STARTED)  
-**Phase Status:** CLOSED ✅
+**Current Phase:** PHASE 7 — HARDENING (IN PROGRESS ✅)  
+**Phase Status:** IN PROGRESS — AUTHORIZED 2026-09-25 by MASTER / CTO
 
 ---
 
-## Current Phase: PHASE 6 — REPORTING (CLOSED ✅)
+## Current Phase: PHASE 7 — HARDENING (IN PROGRESS ✅)
+
+**Objective:** Security audit, performance testing, regression testing, bug fixes, deployment preparation, final documentation (`docs/ROADMAP.md` PHASE 7; `docs/MASTER_BOOTSTRAP.md` §16).
+
+**Start Date:** 2026-09-25  
+**Authorization:** Explicitly granted by MASTER / CTO — 2026-09-25  
+**Precondition verified before start:** Phase 6 CLOSED, checkpoint `ccb71ab`, working tree clean, backend **268/268 PASS**, frontend **9/9 PASS**, frontend lint clean, secrets scan clean, no pre-existing Phase 7 artifacts.
+
+**Agents (active):**
+- MASTER / CTO (active since 2026-09-22)
+- SECURITY ENGINEER (activated 2026-09-25 — first Phase 7 activation; definition `.opencode/agents/security.md`)
+
+**Standby (NOT activated):** QA / Test Engineer, Release / Documentation Engineer, owning engineers for remediation. Activation is per-task under the progressive activation policy.
+
+### Phase 7 Steps
+
+| Step | Task | Scope | Status |
+|------|------|-------|--------|
+| 1 | TASK-P7-001 | Security audit → `docs/PHASE_7_SECURITY_AUDIT.md` | ✅ COMPLETE |
+| 2 | TASK-P7-002 | Remediation of CRITICAL/HIGH findings (executed by owning agents) | ⬜ BACKLOG |
+| 3 | TASK-P7-003 | Regression testing — full suite + edge cases + error scenarios | ⬜ BACKLOG |
+| 4 | TASK-P7-004 | Performance testing (needs DB, provider key, cache layer) | ⬜ BLOCKED — external dependencies |
+| 5 | TASK-P7-005 | Deployment preparation — env vars, migration plan, rollback, monitoring | ⬜ BACKLOG |
+| 6 | TASK-P7-006 | Documentation finalization — user/setup/API/architecture/limitations | ⬜ BACKLOG |
+| 7 | TASK-P7-007 | Phase gate review, MVP completion checklist, checkpoint closure | ⬜ BACKLOG |
+
+**Scope guardrails:** no new product features, no Phase 8 work, no architecture/API-contract/schema changes beyond security remediation approved by MASTER, existing test baselines must remain green.
+
+---
+
+## Previous Phase: PHASE 6 — REPORTING (CLOSED ✅)
 
 **Objective:** Implement investigation report generation with evidence aggregation, PDF export, and structured output.
 
@@ -54,7 +84,7 @@
 - [ ] **Migrations 004/005 not applied to the live database** — prepared and rollback-covered, pending application when DB connectivity is restored.
 - [ ] **Phase 6 frontend report UI** (generation UI, preview, download button, format selector) excluded from the Phase 6 step authorization — deferred.
 
-**Phase 6 CLOSED ✅ via checkpoint commit. Phase 7 NOT STARTED. No Phase 7 work, no frontend report UI, no new APIs outside Phase 6.**
+**Phase 6 CLOSED ✅ via checkpoint commit. Phase 7 AUTHORIZED and started 2026-09-25 (audit-only first task); no frontend report UI, no new APIs beyond Phase 6.**
 
 ---
 
@@ -153,10 +183,11 @@
 
 ### Active Work
 
-**Current Focus:** Phase 6 CLOSED ✅ (2026-09-25). Master-only execution throughout (no specialist agent activation required). Standby for Phase 7 authorization (NOT STARTED).
+**Current Focus:** Phase 7 IN PROGRESS (authorized 2026-09-25). TASK-P7-001 (security audit) COMPLETE — `docs/PHASE_7_SECURITY_AUDIT.md` (18 findings: 2 CRITICAL / 4 HIGH / 8 MEDIUM / 4 LOW; 11 verified controls; 5 checks NOT VERIFIED due to external dependencies). Awaiting MASTER review before TASK-P7-002 remediation. No remediation, regression, performance or deployment work has begun.
 
 **Active Agents:**
 - MASTER / CTO (active since 2026-09-22)
+- SECURITY ENGINEER (activated 2026-09-25, Phase 7)
 
 **Deactivated Agents (post-Phase-5 checkpoint):**
 - AI / Copilot Engineer — deactivated 2026-09-24 (post Phase 5)
@@ -391,12 +422,12 @@
 
 ## Next Steps
 
-1. **Await explicit Phase 7 (Hardening) authorization** — do NOT start Phase 7 automatically
+1. ~~**Await explicit Phase 7 (Hardening) authorization**~~ — ✅ AUTHORIZED by MASTER / CTO on 2026-09-25
 2. Apply migrations `004_phase6_evidence.sql` and `005_phase6_reports_jobs.sql` to the live database once connectivity is restored (rollbacks available)
 3. Optional follow-ups deferred from Phase 6 scope: frontend report UI, real-provider (OpenAI) verification
-4. Phase 7 scope when authorized: security audit, performance/regression testing, deployment preparation, final documentation
+4. Phase 7 in progress: ~~TASK-P7-001 security audit~~ ✅ COMPLETE (2026-09-25) → next TASK-P7-002 remediation (requires MASTER review of the findings register), then regression / performance / deployment / documentation per the Phase 7 step table
 
-**STOP:** Do NOT proceed to Phase 7 automatically. Wait for explicit authorization.
+**Gate:** Phase 7 is authorized and IN PROGRESS. The NEXT gate is TASK-P7-007 (phase gate review) — do NOT start Phase 8 or MVP release claims before all Phase 7 acceptance criteria are met.
 
 ---
 
@@ -449,6 +480,48 @@
 - [x] Documentation updated (STATUS, ROADMAP, TASK_BOARD, AGENTS, README)
 - [x] Migrations 004/005 prepared with rollbacks (application pending DB connectivity)
 - [x] Git checkpoint created
+
+### Phase 7 (IN PROGRESS — authorized 2026-09-25)
+
+Source: `docs/ROADMAP.md` PHASE 7 Acceptance Criteria + MVP Completion.
+
+**Security:**
+- [x] Security audit complete (`docs/PHASE_7_SECURITY_AUDIT.md`, 2026-09-25)
+- [ ] Critical vulnerabilities remediated (SEC-01/SEC-02 — TASK-P7-002)
+- [x] Secrets management verified (audit V-01, V-02 — env-only, no committed secrets)
+- [x] No hardcoded credentials (audit V-01 — repo scan clean)
+
+**Performance:**
+- [ ] API response times acceptable (<2s standard requests)
+- [ ] Graph generation performant (reasonable hops)
+- [ ] Database queries optimized
+- [ ] Caching working
+
+**Quality:**
+- [ ] All tests pass
+- [ ] Regression testing complete
+- [ ] Critical bugs fixed
+- [ ] Known issues documented
+
+**Deployment:**
+- [ ] Production environment ready
+- [ ] Deployment documentation complete
+- [ ] Monitoring configured
+- [ ] Rollback plan documented
+
+**Documentation:**
+- [ ] User guide complete
+- [ ] Setup guide complete
+- [ ] API docs complete
+- [ ] Architecture docs final
+
+**MVP Completion:**
+- [ ] All Phase 0-7 deliverables complete
+- [ ] All acceptance criteria met
+- [ ] Security audit passed
+- [ ] Performance acceptable
+- [ ] Documentation complete
+- [ ] Deployment ready
 
 ---
 
@@ -525,9 +598,9 @@
 - Phase 4 is officially CLOSED as of 2026-09-24
 - Phase 5 is officially CLOSED as of 2026-09-24 — real LLM/provider behavior remains UNVERIFIED (no `OPENAI_API_KEY` configured; documented limitation)
 - Phase 6 is officially CLOSED as of 2026-09-25 — PDF renderer unavailability fails explicitly (`PDF_RENDERER_UNAVAILABLE`); migrations 004/005 prepared but not yet applied (DB connectivity unavailable)
-- Phase 7 is NOT STARTED
+- Phase 7 is AUTHORIZED (2026-09-25) and IN PROGRESS — Security Engineer activated 2026-09-25; no other Phase 7 agent activated yet
 - Progressive agent activation remains the governing policy
-- Do NOT activate Phase-7 agents (Security, Release) until explicit Phase 7 authorization
+- Activate Release / Documentation Engineer and QA Engineer only when their Phase 7 tasks begin
 
 ---
 
@@ -620,8 +693,9 @@
 ---
 
 ### PHASE 7 — HARDENING
-**Status:** NOT STARTED  
-**Planned Agents:** Security Engineer, Release / Documentation Engineer
+**Status:** IN PROGRESS ✅ (Authorized 2026-09-25 by MASTER / CTO)  
+**Active Agents:** MASTER / CTO, Security Engineer (activated 2026-09-25)  
+**Standby Agents:** QA / Test Engineer, Release / Documentation Engineer, owning engineers for remediation
 
 ---
 

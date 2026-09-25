@@ -1,13 +1,128 @@
 # LedgerLens Task Board
 
 **Last Updated:** 2026-09-25  
-**Current Phase:** PHASE 6 — REPORTING (CLOSED ✅) — NEXT: PHASE 7 (NOT STARTED)
+**Current Phase:** PHASE 7 — HARDENING (IN PROGRESS ✅ — authorized 2026-09-25)
 
 ---
 
 ## Active Tasks
 
-_None — Phase 6 is CLOSED ✅ (2026-09-25). Phase 7 (Hardening) has NOT started; awaiting explicit MASTER / CTO authorization._
+### TASK-P7-001: Security Audit (Phase 7 Step 1)
+**Owner:** Security Engineer (activated 2026-09-25)  
+**Status:** COMPLETE ✅ — 2026-09-25  
+**Objective:** Audit the current implementation against `docs/SECURITY_MODEL.md` and produce an evidence-based findings register.  
+**Dependencies:** Phase 6 CLOSED (`ccb71ab`); Phase 7 authorization (granted 2026-09-25)  
+**Files / Modules:** read-only across `backend/app/**`, `frontend/src/**`, `migrations/**`, `backend/requirements.txt`, `.env.example`, configuration; writes only `docs/PHASE_7_SECURITY_AUDIT.md`  
+**Acceptance Criteria:**
+- [x] All `SECURITY_MODEL.md` §14 checklist items for Phases 3, 6 and 7 assessed
+- [x] All 16 registered API routes reviewed for authentication/authorization/input validation (route count confirmed by enumerating `app.routes`: 22 total = 16 API + 4 framework docs + `/` + `/health`)
+- [x] Findings rated CRITICAL/HIGH/MEDIUM/LOW with `file:line` evidence and OWASP mapping (18 findings: SEC-01…SEC-18)
+- [x] Verified controls listed separately from not-verifiable checks (11 verified V-01…V-11; 5 NOT VERIFIED NV-01…NV-05)
+- [x] Every finding assigned an owner and a remediation task
+- [x] No product code changed by the audit itself
+**Tests:** none (audit task) — regression baseline recorded: backend 268/268, frontend 9/9 (re-verified after the audit)  
+**Risks:** scanners (`pip-audit`, `bandit`, `npm audit`) may be unavailable → record as NOT VERIFIED  
+**Output:** `docs/PHASE_7_SECURITY_AUDIT.md`  
+**Result:** 2 CRITICAL (no auth, no authorization/IDOR), 4 HIGH (mock report identity, wildcard CORS, `echo=True` SQL logging, exposed `/docs`), 8 MEDIUM, 4 LOW; plus DOC-01…DOC-05 documentation/contract discrepancies routed to TASK-P7-006. Awaiting MASTER review.
+
+---
+
+### TASK-P7-002: Security Remediation (Phase 7 Step 2)
+**Owner:** Owning agents per finding (Backend / Frontend / Database / MASTER) — assigned by MASTER  
+**Status:** BACKLOG ⬜  
+**Objective:** Remediate CRITICAL and HIGH findings from TASK-P7-001; document deferred MEDIUM/LOW items.  
+**Dependencies:** TASK-P7-001 complete + MASTER review of findings register  
+**Files / Modules:** as specified per finding (ownership rules in `AGENTS.md`)  
+**Acceptance Criteria:**
+- [ ] All CRITICAL findings remediated and re-verified
+- [ ] All HIGH findings remediated or explicitly deferred with MASTER approval
+- [ ] No architecture/contract/schema change outside approved remediation
+- [ ] Existing suites remain green (backend 268+, frontend 9+)
+**Tests:** regression suites + any new security tests specified in the audit  
+**Risks:** fixes touching shared files must be sequenced to avoid ownership conflicts  
+**Output:** code fixes + updated findings statuses
+
+---
+
+### TASK-P7-003: Regression Testing (Phase 7 Step 3)
+**Owner:** QA / Test Engineer (activate at task start)  
+**Status:** BACKLOG ⬜  
+**Objective:** Full end-to-end regression — all features, edge cases, error scenarios (`ROADMAP.md` Deliverables → Regression Testing).  
+**Dependencies:** TASK-P7-002 (so fixes are included)  
+**Files / Modules:** `backend/tests/**`, `frontend/src/__tests__/**`, `frontend/tests/**`  
+**Acceptance Criteria:**
+- [ ] Full backend suite passes
+- [ ] Frontend suite passes and production build passes
+- [ ] Edge-case and error-scenario coverage added for Phase 6/7 paths
+- [ ] Coverage measured per `DEVELOPMENT_STANDARDS.md` §4 (80% backend / 70% frontend) or the gap recorded
+**Tests:** all  
+**Risks:** coverage tooling not installed — may require dependency approval (external)  
+**Output:** regression report with exact counts
+
+---
+
+### TASK-P7-004: Performance Testing (Phase 7 Step 4)
+**Owner:** Backend Engineer + QA / Test Engineer  
+**Status:** BLOCKED ⬜ — external dependencies  
+**Objective:** Measure API latency (<2s standard requests), graph generation, DB query performance, background job performance, caching effectiveness (`ROADMAP.md` Deliverables → Performance Testing).  
+**Dependencies:** live database, provider key (`ALCHEMY_API_KEY`), cache layer decision, load-test harness  
+**Files / Modules:** read-only measurement + `docs/` performance report  
+**Acceptance Criteria:**
+- [ ] API response times measured and <2s for standard requests
+- [ ] Graph generation measured at reasonable hop counts
+- [ ] Database query performance measured with real data
+- [ ] Caching behaviour demonstrated or the absence recorded as unimplemented
+- [ ] No criterion marked pass without execution
+**Risks:** without DB/provider/harness, criteria are unrunnable → record NOT VERIFIED, never "pass"  
+**Output:** performance report with method, environment and numbers
+
+---
+
+### TASK-P7-005: Deployment Preparation (Phase 7 Step 5)
+**Owner:** Release / Documentation Engineer (activate at task start) + Backend Engineer  
+**Status:** BACKLOG ⬜  
+**Objective:** Production environment setup, environment-variable configuration, database migration plan, deployment documentation, rollback procedure, monitoring setup (`ROADMAP.md` Deliverables → Deployment Preparation).  
+**Dependencies:** TASK-P7-002 (config-sensitive fixes), migration plan covering 001-005 + rollbacks  
+**Files / Modules:** deployment documentation, `.env.example`, monitoring/logging configuration  
+**Acceptance Criteria:**
+- [ ] Production environment ready (or documented target environment)
+- [ ] Environment variable inventory complete and secret-free
+- [ ] Database migration plan covering migrations 001-005 with rollback steps
+- [ ] Rollback procedure documented and tested where possible
+- [ ] Monitoring/logging configured per `ARCHITECTURE.md` §8.4 and `SECURITY_MODEL.md` §12
+**Risks:** no deployment target exists yet — target environment must be defined by MASTER  
+**Output:** deployment runbook
+
+---
+
+### TASK-P7-006: Documentation Finalization (Phase 7 Step 6)
+**Owner:** Release / Documentation Engineer + Documentation / Context Engineer  
+**Status:** BACKLOG ⬜  
+**Objective:** Finalize user guide, setup/installation guide, API documentation, architecture documentation, known limitations, troubleshooting guide (`ROADMAP.md` Deliverables → Documentation).  
+**Dependencies:** TASK-P7-002 and TASK-P7-005 (so documented behaviour is final)  
+**Files / Modules:** `README.md`, `docs/API_CONTRACT.md`, `docs/ARCHITECTURE.md`, `docs/KNOWN_LIMITATIONS.md`, new user/setup/troubleshooting docs  
+**Acceptance Criteria:**
+- [ ] Setup/installation guide exists and is executable end-to-end
+- [ ] API documentation reconciled with the implemented routes
+- [ ] Architecture documentation finalized
+- [ ] Known limitations updated (Phase 5/6/7 entries) and deferred items recorded
+- [ ] Troubleshooting guide exists
+**Output:** finalized documentation set
+
+---
+
+### TASK-P7-007: Phase Gate Review & MVP Completion (Phase 7 Step 7)
+**Owner:** MASTER / CTO  
+**Status:** BACKLOG ⬜  
+**Objective:** Verify all Phase 7 acceptance criteria, run the full suite, update STATUS/ROADMAP/TASK_BOARD/AGENTS, evaluate the MVP Completion checklist, create the single Phase 7 checkpoint commit.  
+**Dependencies:** TASK-P7-001 … TASK-P7-006  
+**Acceptance Criteria:**
+- [ ] `ROADMAP.md` Phase 7 acceptance criteria all checked or explicitly deferred by MASTER
+- [ ] `STATUS.md` Phase 7 completion checklist satisfied
+- [ ] MVP Completion checklist evaluated (`ROADMAP.md` → MVP Completion)
+- [ ] Full test suite green; secrets scan clean; working tree clean before commit
+- [ ] Phase 7 agents deactivated in `AGENTS.md`
+**Output:** Phase 7 closure record + checkpoint commit
 
 ---
 
@@ -555,8 +670,8 @@ _None_
 
 ## Pending / Future Tasks
 
-_Phase 7 (Hardening) tasks will be created upon explicit Phase 7 authorization.  
-First Phase-7 prerequisite: apply migrations `004_phase6_evidence.sql` and `005_phase6_reports_jobs.sql` to the live database once connectivity is restored._
+_Phase 7 (Hardening) tasks TASK-P7-001 … TASK-P7-007 were created upon authorization (2026-09-25) and are listed under Active Tasks.  
+Phase 7 prerequisite still outstanding: apply migrations `004_phase6_evidence.sql` and `005_phase6_reports_jobs.sql` to the live database once connectivity is restored (a dependency of TASK-P7-004 / TASK-P7-005, not of TASK-P7-001)._
 
 ---
 
@@ -568,7 +683,7 @@ First Phase-7 prerequisite: apply migrations `004_phase6_evidence.sql` and `005_
 - **Phase 4 is officially CLOSED (2026-09-24)**
 - **Phase 5 is officially CLOSED (2026-09-24) — MASTER-authorized checkpoint**
 - **Phase 6 is officially CLOSED (2026-09-25) — MASTER-authorized checkpoint (Steps 1–6)**
-- **Phase 7 is NOT STARTED**
+- **Phase 7 is AUTHORIZED (2026-09-25, MASTER / CTO) and IN PROGRESS — Security Engineer activated; TASK-P7-001 (security audit) COMPLETE (2026-09-25), next TASK-P7-002 pending MASTER review**
 - Phase-2 local suite: 41/41 tests PASS
 - Phase-4 local suite: 116/116 tests PASS
 - Phase-5 local suite: 190/190 tests PASS (116 pre-existing + 74 Phase 5)
@@ -581,8 +696,8 @@ First Phase-7 prerequisite: apply migrations `004_phase6_evidence.sql` and `005_
 - **Documented limitation: PDF export fails explicitly with `PDF_RENDERER_UNAVAILABLE` when no renderer library is installed — an unavailable renderer is never reported as a successful export**
 - Migration 002 & 003 file-complete but not yet applied to live Supabase
 - Migrations 004 (evidence) & 005 (reports/jobs) file-complete but not yet applied — DB connectivity unavailable; apply with rollbacks when connectivity is restored
-- Do NOT activate Security / Release agents until Phase 7 authorization
-- Do NOT start Phase 7 work until explicit MASTER / CTO authorization
+- Phase 7 agents are activated on demand: Security Engineer ACTIVE (2026-09-25); Release / Documentation Engineer activates when TASK-P7-005/006 begin; QA Engineer activates when TASK-P7-003 begins
+- Phase 7 boundary: verification, remediation, deployment preparation and documentation only — no Phase 8 work, no new product features, no architecture/contract/schema redesign
 
 ---
 

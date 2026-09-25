@@ -1,8 +1,9 @@
 # LedgerLens Agent Registry
 
 **Last Updated:** 2026-09-25  
-**Current Phase:** PHASE 6 — REPORTING (CLOSED ✅) — NEXT: PHASE 7 (NOT STARTED)  
-**Previous Phase:** PHASE 5 — AI COPILOT (CLOSED ✅)
+**Current Phase:** PHASE 7 — HARDENING (IN PROGRESS ✅)  
+**Previous Phase:** PHASE 6 — REPORTING (CLOSED ✅)  
+**Phase 7 Authorization:** Granted by MASTER / CTO — 2026-09-25
 
 ## Purpose
 
@@ -18,9 +19,9 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Parallel agent execution requires explicit ownership boundaries, stable interfaces, and MASTER approval
 - Serial/controlled execution is the default mode
 
-## Current Standing Active Agents (Phase 6 — CLOSED; MASTER / CTO only)
+## Current Standing Active Agents (Phase 7 — IN PROGRESS)
 
-**Phase 6 note:** No specialist agent was activated for Phase 6. Per the progressive activation policy and ROADMAP ("None — existing agents sufficient"), all six Phase 6 steps were executed and verified by MASTER / CTO alone.
+**Phase 7 note:** Phase 7 was authorized by MASTER / CTO on 2026-09-25. Per the progressive activation policy, the **Security Engineer is the first and currently only specialist activated**. QA Engineer, Release / Documentation Engineer and owning engineers remain on standby until their Phase 7 tasks begin.
 
 ### MASTER / CTO (ACTIVE)
 **Status:** Active  
@@ -37,6 +38,24 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 - Project-wide coordination
 - AGENTS.md (this file)
 - Phase gate enforcement
+
+---
+
+### SECURITY ENGINEER (ACTIVE — Phase 7)
+**Status:** Active  
+**Activated:** 2026-09-25  
+**Agent definition:** `.opencode/agents/security.md`  
+**Responsibilities:**
+- Security audit of backend, frontend, database, migrations and configuration
+- OWASP Top 10 mapping and dependency-scan assessment
+- Findings register with severity, `file:line` evidence and owners
+- Security testing requirements per `SECURITY_MODEL.md` §17.1
+- Remediation planning (fixes applied by owning agents)
+
+**Ownership:**
+- `docs/PHASE_7_SECURITY_AUDIT.md`
+- `backend/tests/test_security*.py`
+- Findings/reports only for files owned by other agents
 
 ---
 
@@ -218,10 +237,12 @@ The LedgerLens team follows a **progressive agent activation** strategy:
 ### PHASE 7 AGENTS
 
 #### SECURITY ENGINEER
+**Status:** ACTIVATED 2026-09-25 (Phase 7)  
 **Planned Activation:** Phase 7  
 **Responsibilities:** Security review, audit, vulnerability assessment
 
 #### RELEASE / DOCUMENTATION ENGINEER
+**Status:** Not yet activated — standby for Phase 7 deployment/documentation tasks  
 **Planned Activation:** Phase 7  
 **Responsibilities:** Release notes, deployment documentation
 
@@ -286,6 +307,7 @@ Before activating any specialist agent, the MASTER must evaluate:
 | VASP / Entity Intelligence Engineer | 2026-09-23 | Phase 4 Stage 3 | Entity Intelligence, VASP Attribution |
 | Risk Engineer | 2026-09-24 | Phase 4 Stage 4 | Explainable Risk Engine |
 | AI / Copilot Engineer | 2026-09-24 | Phase 5 | AI Copilot: grounding, tools, citations, safety, API, tests |
+| Security Engineer | 2026-09-25 | Phase 7 | Security audit, OWASP mapping, findings register |
 
 ---
 
@@ -303,4 +325,5 @@ Before activating any specialist agent, the MASTER must evaluate:
 - Documented limitation: real LLM/provider behavior UNVERIFIED (no `OPENAI_API_KEY` configured)
 - Documented limitation: PDF export fails explicitly with `PDF_RENDERER_UNAVAILABLE` when no renderer library is installed (never reported as a successful export)
 - Migrations 004/005 prepared but not applied (DB connectivity unavailable)
-- Phase 7 is NOT STARTED — do NOT activate Security / Release agents until explicit Phase 7 authorization
+- Phase 7 is AUTHORIZED (2026-09-25) and IN PROGRESS — Security Engineer activated; Release / Documentation Engineer and QA Engineer still on standby
+- Do NOT activate Release / Documentation or other agents until their Phase 7 tasks begin
