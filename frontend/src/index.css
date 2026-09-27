@@ -1,63 +1,204 @@
 @import "tailwindcss";
 
+@theme {
+  /* Spacing */
+  --spacing-space-sm: 8px;
+  --spacing-space-md: 12px;
+  --spacing-space-xs: 4px;
+  --spacing-space-lg: 16px;
+  --spacing-gutter: 16px;
+  --spacing-margin: 24px;
+  --spacing-space-xl: 24px;
+  /* Typography */
+  --font-label-caps: "JetBrains Mono";
+  --font-headline-sm: "Inter";
+  --font-display-lg: "Inter";
+  --font-headline-md: "Inter";
+  --font-body-md: "Inter";
+  --font-code-mono: "JetBrains Mono";
+  --font-body-sm: "Inter";
+}
+
 :root {
-  --surface-canvas: #090B10;
-  --surface-sidebar: #0D1017;
-  --surface-card: #121620;
-  --surface-inspector: #161B26;
-  --surface-dock: #0E1119;
-  --surface-elevated: #1C2333;
+  /* LIGHT MODE VARS */
+
+  --color-surface-dim: #f3f4f6;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #ffffff;
+  --color-surface-container: #ffffff;
+  --color-surface-container-high: #f9fafb;
+  --color-surface-container-highest: #f3f4f6;
+  --color-surface: #ffffff;
+  --color-outline: #e5e7eb;
+  --color-outline-variant: #d1d5db;
+  --color-on-surface: #111827;
+  --color-on-surface-variant: #6b7280;
+  --color-primary: #ff9f43;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #fff1e3;
+  --color-on-primary-container: #ff9f43;
+  --color-secondary: #28c76f;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e6f9f0;
+  --color-on-secondary-container: #28c76f;
+  --color-error: #ea5455;
+  --color-on-error: #ffffff;
+  --color-error-container: #fcebeb;
+  --color-background: #f3f4f6;
+  --color-on-background: #111827;
   
-  --border-subtle: #1F2637;
-  --border-strong: #2D374D;
-  --border-highlight: #2563EB;
-  
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --text-mono: #CBD5E1;
-  
-  --accent-primary: #2563EB;
-  --accent-hover: #1D4ED8;
-  --accent-emerald: #10B981;
-  --accent-amber: #F59E0B;
-  --accent-crimson: #EF4444;
-  --accent-purple: #8B5CF6;
-  
-  --hop-0: #EF4444;
-  --hop-1: #F59E0B;
-  --hop-2: #3B82F6;
-  --hop-3: #10B981;
+  --bg-app: #f3f4f6;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #f9fafb;
+  --border-color: #e5e7eb;
+  --accent-orange: #ff9f43;
+  --accent-orange-hover: #ff8800;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+
+}
+
+html.dark {
+  /* DARK MODE VARS */
+  --color-surface-dim: #13141b;
+  --color-secondary-fixed: #ffcaa3;
+  --color-on-primary-fixed: #4d2b00;
+  --color-on-secondary-container: #ffdcc6;
+  --color-on-error-container: #ffdad6;
+  --color-outline: #2b2d3c;
+  --color-surface-bright: #292b3a;
+  --color-inverse-primary: #ffb784;
+  --color-tertiary-container: #2b2d3c;
+  --color-surface-container-high: #22242f;
+  --color-outline-variant: #3b3e51;
+  --color-on-tertiary-container: #e0e2ec;
+  --color-tertiary-fixed-dim: #ffb784;
+  --color-error: #ea5455;
+  --color-on-error: #ffffff;
+  --color-secondary-fixed-dim: #ffa566;
+  --color-inverse-surface: #e0e2ec;
+  --color-surface-container-low: #181a24;
+  --color-on-surface-variant: #a0a5b5;
+  --color-inverse-on-surface: #13141b;
+  --color-on-tertiary-fixed: #301400;
+  --color-surface-container-lowest: #0b0e15;
+  --color-primary-fixed: #ffcaa3;
+  --color-primary-container: #332115;
+  --color-surface-container: #1c1d26;
+  --color-on-tertiary: #4f2500;
+  --color-on-surface: #ffffff;
+  --color-primary: #ff9f43;
+  --color-primary-fixed-dim: #ff9f43;
+  --color-on-primary: #ffffff;
+  --color-error-container: #93000a;
+  --color-on-secondary-fixed-variant: #713700;
+  --color-secondary-container: #2b2d3c;
+  --color-on-tertiary-fixed-variant: #713700;
+  --color-surface-container-highest: #2b2d3c;
+  --color-tertiary-fixed: #ffdcc6;
+  --color-on-primary-fixed-variant: #713700;
+  --color-surface: #16171b;
+  --color-surface-tint: #ff9f43;
+  --color-on-primary-container: #ffcaa3;
+  --color-surface-variant: #2b2d3c;
+  --color-on-secondary-fixed: #301400;
+  --color-secondary: #28c76f;
+  --color-tertiary: #00cfe8;
+  --color-background: #13141b;
+  --color-on-background: #ffffff;
+  --color-on-secondary: #ffffff;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--surface-canvas);
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--color-surface-dim);
+  color: var(--color-on-surface);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
 }
 
-.font-mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-}
-
-/* Scrollbar styles for dark forensic UI */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--surface-canvas);
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-subtle);
-  border-radius: 3px;
+  background: var(--color-outline);
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
+  background: var(--color-outline-variant);
 }
+
+/* Blueprint grids for graph */
+.blueprint-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(65, 71, 83, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(65, 71, 83, 0.22) 1px, transparent 1px);
+}
+.blueprint-subgrid {
+  background-size: 120px 120px;
+  background-image: 
+    linear-gradient(to right, rgba(170, 199, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(170, 199, 255, 0.08) 1px, transparent 1px);
+}
+
+/* React Flow Dark Theme Controls & MiniMap */
+.react-flow__controls {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--color-outline) !important;
+  background: var(--color-surface-container) !important;
+}
+
+.react-flow__controls-button {
+  background: var(--color-surface-container) !important;
+  border-bottom: 1px solid var(--color-outline) !important;
+  color: var(--color-on-surface) !important;
+  fill: var(--color-on-surface-variant) !important;
+  transition: all 0.15s ease !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--color-surface-container-high) !important;
+  fill: var(--color-primary) !important;
+}
+
+.react-flow__controls-button svg {
+  max-width: 14px !important;
+  max-height: 14px !important;
+  fill: var(--color-on-surface-variant) !important;
+  transition: fill 0.15s ease !important;
+}
+
+.react-flow__controls-button:hover svg {
+  fill: var(--color-primary) !important;
+}
+
+.react-flow__minimap {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--color-outline) !important;
+}
+

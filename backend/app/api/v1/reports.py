@@ -51,7 +51,7 @@ def get_report_generator(db: AsyncSession = Depends(get_db)) -> ReportGenerator:
     return ReportGenerator(db)
 
 
-def _case_not_found(case_id: UUID) -> HTTPException:
+def _case_not_found(case_id: str) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
@@ -69,7 +69,7 @@ def _case_not_found(case_id: UUID) -> HTTPException:
     },
 )
 async def create_report(
-    case_id: UUID,
+    case_id: str,
     request: ReportGenerateRequest,
     db: AsyncSession = Depends(get_db),
     store: ReportStore = Depends(get_report_store),
@@ -80,15 +80,16 @@ async def create_report(
     case = await CaseService.get_case(db, case_id)
     if not case:
         raise _case_not_found(case_id)
-    require_case_ownership(case, principal, case_id)
+    require_case_ownership(case, principal, case.case_id)
+    actual_id = case.case_id
 
     job = await store.create_job(
-        case_id, request.report_type, request.format, principal.investigator_id
+        actual_id, request.report_type, request.format, principal.investigator_id
     )
     await store.mark_job_started(job)
     try:
         report = await generator.generate(
-            case_id,
+            actual_id,
             request.report_type,
             request.format,
             generated_by=principal.investigator_id,
@@ -146,7 +147,7 @@ async def create_report(
     },
 )
 async def list_reports(
-    case_id: UUID,
+    case_id: str,
     db: AsyncSession = Depends(get_db),
     store: ReportStore = Depends(get_report_store),
     principal: Principal = Depends(get_current_principal),
@@ -155,9 +156,9 @@ async def list_reports(
     case = await CaseService.get_case(db, case_id)
     if not case:
         raise _case_not_found(case_id)
-    require_case_ownership(case, principal, case_id)
+    require_case_ownership(case, principal, case.case_id)
 
-    records = await store.get_reports_for_case(case_id)
+    records = await store.get_reports_for_case(case.case_id)
     items = [
         ReportListItemResponse(
             report_id=record.report_id,
@@ -245,3 +246,38 @@ async def download_report(
         )
 
     return Response(content=record.content, media_type=media_type, headers=headers)
+
+
+@router.get(
+    "/reports/{report_id}",
+    response_class=Response,
+    responses={
+        200: {"content": {"application/json": {}}, "description": "Structured report JSON data"},
+        404: {"model": ErrorResponse, "description": "Report not found"},
+    },
+)
+async def get_report_data(
+    report_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    store: ReportStore = Depends(get_report_store),
+    principal: Principal = Depends(get_current_principal),
+):
+    """Retrieve the structured report JSON content for workstation preview."""
+    record = await store.get_report(report_id)
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": {"code": "REPORT_NOT_FOUND", "message": f"Report {report_id} not found"}},
+        )
+
+    case = await CaseService.get_case(db, record.case_id)
+    require_case_ownership(case, principal, record.case_id)
+
+    if not record.content:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": {"code": "REPORT_NOT_AVAILABLE", "message": f"Report {report_id} has no content"}},
+        )
+
+    return Response(content=record.content, media_type="application/json")
+

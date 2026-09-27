@@ -21,7 +21,9 @@ interface InvestigationState {
   isInspectorOpen: boolean;
   inspectorMode: 'node' | 'edge' | 'transaction' | null;
   
-  activeBottomTab: 'ledger' | 'evidence' | 'timeline' | 'errors';
+  activeBottomTab: 'ledger' | 'evidence' | 'findings' | 'timeline' | 'errors';
+  
+  isNewCaseModalOpen: boolean;
   
   evidenceNotes: EvidenceNote[];
   
@@ -31,12 +33,21 @@ interface InvestigationState {
   selectEdge: (edge: GraphEdge | null) => void;
   selectTransaction: (tx: CanonicalTransaction | null) => void;
   setInspectorOpen: (open: boolean) => void;
-  setActiveBottomTab: (tab: 'ledger' | 'evidence' | 'timeline' | 'errors') => void;
+  setActiveBottomTab: (tab: 'ledger' | 'evidence' | 'findings' | 'timeline' | 'errors') => void;
   addEvidenceNote: (note: Omit<EvidenceNote, 'id' | 'timestamp'>) => void;
   closeInspector: () => void;
+  setNewCaseModalOpen: (open: boolean) => void;
+  globalSearchQuery: string;
+  setGlobalSearchQuery: (query: string) => void;
+  language: 'EN' | 'HI';
+  setLanguage: (lang: 'EN' | 'HI') => void;
 }
 
 export const useInvestigationStore = create<InvestigationState>((set) => ({
+  globalSearchQuery: '',
+  setGlobalSearchQuery: (query) => set({ globalSearchQuery: query }),
+  language: 'EN',
+  setLanguage: (lang) => set({ language: lang }),
   currentCase: null,
   currentTrace: null,
   
@@ -48,14 +59,16 @@ export const useInvestigationStore = create<InvestigationState>((set) => ({
   inspectorMode: null,
   
   activeBottomTab: 'ledger',
+  isNewCaseModalOpen: false,
   
   evidenceNotes: [
     {
       id: 'note-1',
       caseId: 'demo',
       timestamp: new Date().toISOString(),
-      author: 'Investigator #402',
-      content: 'Initial seed address identified from victim scam report. Primary outflow observed at Hop 1.',
+      author: 'Demo Analyst',
+      content:
+        '[DEMO DATA] demo_data=true | Sample analyst note: initial seed address identified from a victim scam report. Primary outflow observed at Hop 1. This note is synthetic MVP demonstration content, not verified chain evidence.',
       tag: 'lead',
     },
   ],
@@ -109,4 +122,7 @@ export const useInvestigationStore = create<InvestigationState>((set) => ({
     selectedTransaction: null,
     inspectorMode: null,
   }),
+  setNewCaseModalOpen: (open) => set({ isNewCaseModalOpen: open }),
 }));
+
+

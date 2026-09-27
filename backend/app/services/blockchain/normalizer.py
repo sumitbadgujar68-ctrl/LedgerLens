@@ -33,7 +33,7 @@ class TransactionNormalizer:
         decimals = transfer.decimals if transfer.decimals is not None else 18
         amount = self._to_decimal(transfer.amount_raw, decimals)
         asset_type = _CATEGORY_TO_ASSET_TYPE.get(transfer.transfer_category, AssetType.UNKNOWN)
-        status = self._to_status(transfer.status_hint)
+        status = self._to_status(transfer.status_hint, transfer.block_number)
         raw_reference = transfer.raw_reference
         if raw_reference is None and transfer.raw:
             try:
@@ -74,15 +74,20 @@ class TransactionNormalizer:
         return base / (Decimal(10) ** decimals)
 
     @staticmethod
-    def _to_status(status_hint: Optional[str]) -> TransactionStatus:
+    def _to_status(status_hint: Optional[str], block_number: Optional[int] = None) -> TransactionStatus:
         if not status_hint:
+            if block_number is not None and block_number > 0:
+                return TransactionStatus.SUCCESS
             return TransactionStatus.UNKNOWN
         hint = status_hint.strip().lower()
         mapping = {
             "success": TransactionStatus.SUCCESS,
             "1": TransactionStatus.SUCCESS,
+            "confirmed": TransactionStatus.SUCCESS,
             "failed": TransactionStatus.FAILED,
             "0": TransactionStatus.FAILED,
             "pending": TransactionStatus.PENDING,
+            "unconfirmed": TransactionStatus.PENDING,
         }
         return mapping.get(hint, TransactionStatus.UNKNOWN)
+

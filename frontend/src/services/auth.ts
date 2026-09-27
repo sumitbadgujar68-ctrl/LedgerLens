@@ -16,6 +16,7 @@ const TOKEN_KEY = 'ledgerlens.token';
 const USER_KEY = 'ledgerlens.investigator';
 
 export const UNAUTHORIZED_EVENT = 'ledgerlens:unauthorized';
+export const SIGNOUT_EVENT = 'ledgerlens:signout';
 
 export function getToken(): string | null {
   try {
@@ -56,5 +57,12 @@ export function notifyUnauthorized(): void {
   clearSession();
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+  }
+}
+
+export function notifySignOut(): void {
+  clearSession();
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(SIGNOUT_EVENT));
   }
 }

@@ -36,22 +36,37 @@ class RiskEngine:
     ) -> RiskScore:
         patterns = run_all_detectors(graph)
 
-        wallet_addresses = {n.id for n in graph.nodes}
-        attributions = []
-        for addr in wallet_addresses:
-            for pattern in patterns:
-                if pattern.wallet_address == addr:
-                    attr = await self.attribution_engine.attribute_address(
-                        addr, graph.blockchain, case_id, trace_id
-                    )
-                    if attr:
-                        attributions.append(attr)
+        existing_attributions = await self._get_existing_attributions(case_id, trace_id)
+        attributions = list(existing_attributions)
+        attributed_wallets = {a.wallet_address.lower() for a in existing_attributions}
+
+        for addr in {n.id for n in graph.nodes}:
+            if addr.lower() in attributed_wallets:
+                continue
+            if not any(p.wallet_address == addr for p in patterns):
+                continue
+            attr = await self.attribution_engine.attribute_address(
+                addr, graph.blockchain, case_id, trace_id
+            )
+            if attr:
+                # Persist so evidence.attribution_ids reference real rows and the
+                # record's candidate_entity stays loaded in this session.
+                await self.attribution_engine.persist_attribution(attr)
+                attributions.append(attr)
+                attributed_wallets.add(addr.lower())
 
         existing_attributions = await self._get_existing_attributions(case_id, trace_id)
         attributions.extend(existing_attributions)
 
-        calculator = RiskFactorCalculator(graph, patterns, attributions, self.db)
-        factors = calculator.calculate_all(wallet_address)
+        linked_case_counts = await self._linked_case_counts({n.id for n in graph.nodes})
+        calculator = RiskFactorCalculator(
+            graph,
+            patterns,
+            attributions,
+            self.db,
+            linked_case_count=linked_case_counts.get(wallet_address.lower(), 0),
+        )
+        factors = calculator.calculate_all(wallet_address, include_zero_weight=True)
 
         total_score = sum(f.weight for f in factors)
         total_score = validate_score(total_score)
@@ -88,12 +103,35 @@ class RiskEngine:
         self, case_id: UUID, trace_id: UUID
     ) -> List[VaspAttributionRecord]:
         from sqlalchemy import select
-        stmt = select(VaspAttributionRecord).where(
-            VaspAttributionRecord.case_id == case_id,
-            VaspAttributionRecord.trace_id == trace_id,
+        from sqlalchemy.orm import selectinload
+
+        stmt = (
+            select(VaspAttributionRecord)
+            .options(selectinload(VaspAttributionRecord.candidate_entity))
+            .where(
+                VaspAttributionRecord.case_id == case_id,
+                VaspAttributionRecord.trace_id == trace_id,
+            )
         )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
+
+    async def _linked_case_counts(self, wallet_addresses) -> dict:
+        """Pre-fetch per-wallet risk row counts for the sync factor calculator."""
+        from sqlalchemy import func, select
+
+        addresses = {a.lower() for a in wallet_addresses if a}
+        if not addresses:
+            return {}
+        result = await self.db.execute(
+            select(
+                RiskScoreRecord.wallet_address,
+                func.count(RiskScoreRecord.risk_score_id),
+            )
+            .where(RiskScoreRecord.wallet_address.in_(addresses))
+            .group_by(RiskScoreRecord.wallet_address)
+        )
+        return {row[0]: int(row[1]) for row in result.all()}
 
     async def _persist_risk_score(self, risk_score: RiskScore) -> RiskScoreRecord:
         factors_json = []

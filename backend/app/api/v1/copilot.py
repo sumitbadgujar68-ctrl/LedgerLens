@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, Union
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -26,6 +26,7 @@ from app.services.auth.deps import (
     get_current_principal,
     require_case_ownership,
 )
+from app.db.models import Case
 from app.services.case_service import CaseService
 
 logger = logging.getLogger("ledgerlens.api.copilot")
@@ -33,7 +34,7 @@ logger = logging.getLogger("ledgerlens.api.copilot")
 router = APIRouter(prefix="/cases", tags=["copilot"])
 
 
-def _handle_engine_exceptions(case_id: UUID, e: Exception) -> None:
+def _handle_engine_exceptions(case_id: Union[UUID, str], e: Exception) -> None:
     if isinstance(e, CaseNotFoundError):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -57,15 +58,16 @@ def _handle_engine_exceptions(case_id: UUID, e: Exception) -> None:
 
 
 async def _require_case_access(
-    db: AsyncSession, case_id: UUID, principal: Principal
-) -> None:
+    db: AsyncSession, case_id: str, principal: Principal
+) -> Case:
     case = await CaseService.get_case(db, case_id)
     if not case:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
-    require_case_ownership(case, principal, case_id)
+    require_case_ownership(case, principal, case.case_id)
+    return case
 
 
 @router.post(
@@ -80,7 +82,7 @@ async def _require_case_access(
     },
 )
 async def ask_copilot(
-    case_id: UUID,
+    case_id: str,
     request: CopilotAskRequest,
     trace_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
@@ -91,9 +93,10 @@ async def ask_copilot(
     Ask the AI copilot a question about the case.
     The copilot answers grounded in case data with citations.
     """
-    await _require_case_access(db, case_id, principal)
+    case = await _require_case_access(db, case_id, principal)
+    actual_id = case.case_id
     try:
-        result = await engine.ask(case_id, request.question, trace_id)
+        result = await engine.ask(actual_id, request.question, trace_id)
         return CopilotAskResponse(**result)
     except (CaseNotFoundError, ProviderNotConfiguredError, ProviderError) as e:
         _handle_engine_exceptions(case_id, e)
@@ -115,7 +118,7 @@ async def ask_copilot(
     },
 )
 async def summarize_case(
-    case_id: UUID,
+    case_id: str,
     trace_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
     engine: CopilotEngine = Depends(get_copilot_engine),
@@ -124,9 +127,10 @@ async def summarize_case(
     """
     Generate a comprehensive summary of the case investigation.
     """
-    await _require_case_access(db, case_id, principal)
+    case = await _require_case_access(db, case_id, principal)
+    actual_id = case.case_id
     try:
-        result = await engine.summarize(case_id, trace_id)
+        result = await engine.summarize(actual_id, trace_id)
         return CopilotSummarizeResponse(**result)
     except (CaseNotFoundError, ProviderNotConfiguredError, ProviderError) as e:
         _handle_engine_exceptions(case_id, e)
@@ -149,7 +153,7 @@ async def summarize_case(
     },
 )
 async def explain_risk(
-    case_id: UUID,
+    case_id: str,
     request: CopilotExplainRiskRequest,
     db: AsyncSession = Depends(get_db),
     engine: CopilotEngine = Depends(get_copilot_engine),
@@ -158,9 +162,10 @@ async def explain_risk(
     """
     Explain the risk score for a specific wallet in the case.
     """
-    await _require_case_access(db, case_id, principal)
+    case = await _require_case_access(db, case_id, principal)
+    actual_id = case.case_id
     try:
-        result = await engine.explain_risk(case_id, request.wallet_address, request.trace_id)
+        result = await engine.explain_risk(actual_id, request.wallet_address, request.trace_id)
         return CopilotExplainRiskResponse(**result)
     except (CaseNotFoundError, ProviderNotConfiguredError, ProviderError) as e:
         _handle_engine_exceptions(case_id, e)

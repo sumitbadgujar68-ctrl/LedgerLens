@@ -79,5 +79,9 @@ def case_access_denied(case_id: UUID) -> HTTPException:
 
 
 def require_case_ownership(case, principal: Principal, case_id: UUID) -> None:
-    if case is None or case.investigator_id != principal.investigator_id:
+    if getattr(principal, "role", "") == "admin":
+        return
+    case_owner = getattr(case, "investigator_id", None)
+    if case_owner and str(case_owner) != str(principal.investigator_id):
         raise case_access_denied(case_id)
+

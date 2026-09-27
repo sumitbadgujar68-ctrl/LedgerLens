@@ -1,8 +1,34 @@
-from pydantic import BaseModel, Field, EmailStr
-from typing import Optional
+from pydantic import BaseModel, Field, EmailStr, model_validator
+from typing import Optional, Any, Dict
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
+
+DEMO_META_MARKER = "demo_data"
+DEMO_META_PREFIX = "{"
+
+
+def parse_demo_meta(notes: Optional[str]) -> Dict[str, Any]:
+    """Extract the demo metadata header from a case's investigator_notes.
+
+    Demo rows carry a JSON header object on the first line of investigator_notes,
+    e.g. {"demo_data": true, "case_type": "MVP_DEMO", ...} followed by a free-text
+    description. Returns {} when the notes are absent or not demo metadata.
+    """
+    if not notes:
+        return {}
+    first_line = notes.strip().splitlines()[0].strip() if notes.strip() else ""
+    if not first_line.startswith(DEMO_META_PREFIX):
+        return {}
+    try:
+        import json
+
+        parsed = json.loads(first_line)
+    except (ValueError, TypeError):
+        return {}
+    if not isinstance(parsed, dict) or DEMO_META_MARKER not in parsed:
+        return {}
+    return parsed
 
 class CaseCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=500)
@@ -32,6 +58,15 @@ class CaseResponse(BaseModel):
     investigator_notes: Optional[str]
     created_at: datetime
     updated_at: datetime
+    demo_data: bool = False
+    data_source: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _derive_demo_flags(self) -> "CaseResponse":
+        meta = parse_demo_meta(self.investigator_notes)
+        self.demo_data = bool(meta.get("demo_data", False))
+        self.data_source = meta.get("data_source")
+        return self
 
     class Config:
         from_attributes = True

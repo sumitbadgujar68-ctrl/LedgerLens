@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from sqlalchemy import select
@@ -24,9 +24,16 @@ class GroundingLayer:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_case(self, case_id: UUID) -> Optional[Dict[str, Any]]:
-        result = await self.db.execute(select(Case).where(Case.case_id == case_id))
-        case = result.scalar_one_or_none()
+    async def _resolve_case_id(self, case_id: Union[UUID, str]) -> Optional[UUID]:
+        if isinstance(case_id, UUID):
+            return case_id
+        from app.services.case_service import CaseService
+        case = await CaseService.get_case(self.db, case_id)
+        return case.case_id if case else None
+
+    async def get_case(self, case_id: Union[UUID, str]) -> Optional[Dict[str, Any]]:
+        from app.services.case_service import CaseService
+        case = await CaseService.get_case(self.db, case_id)
         if not case:
             return None
 
@@ -47,8 +54,11 @@ class GroundingLayer:
             "updated_at": case.updated_at.isoformat() if case.updated_at else None,
         }
 
-    async def get_graph(self, case_id: UUID, trace_id: Optional[UUID] = None) -> Optional[CanonicalGraph]:
+    async def get_graph(self, case_id: Union[UUID, str], trace_id: Optional[UUID] = None) -> Optional[CanonicalGraph]:
         from app.db.models import GraphRecord
+        actual_id = await self._resolve_case_id(case_id)
+        if not actual_id and not trace_id:
+            return None
 
         if trace_id:
             result = await self.db.execute(
@@ -57,7 +67,7 @@ class GroundingLayer:
         else:
             result = await self.db.execute(
                 select(GraphRecord)
-                .where(GraphRecord.case_id == case_id)
+                .where(GraphRecord.case_id == actual_id)
                 .order_by(GraphRecord.generated_at.desc())
                 .limit(1)
             )
@@ -68,9 +78,12 @@ class GroundingLayer:
         return CanonicalGraph.model_validate(graph_record.graph_data)
 
     async def get_patterns(
-        self, case_id: UUID, trace_id: Optional[UUID] = None, wallet_address: Optional[str] = None
+        self, case_id: Union[UUID, str], trace_id: Optional[UUID] = None, wallet_address: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        query = select(PatternRecord).where(PatternRecord.case_id == case_id)
+        actual_id = await self._resolve_case_id(case_id)
+        if not actual_id:
+            return []
+        query = select(PatternRecord).where(PatternRecord.case_id == actual_id)
         if trace_id:
             query = query.where(PatternRecord.trace_id == trace_id)
         if wallet_address:
@@ -95,9 +108,12 @@ class GroundingLayer:
         ]
 
     async def get_attributions(
-        self, case_id: UUID, trace_id: Optional[UUID] = None, wallet_address: Optional[str] = None
+        self, case_id: Union[UUID, str], trace_id: Optional[UUID] = None, wallet_address: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        query = select(VaspAttributionRecord).where(VaspAttributionRecord.case_id == case_id)
+        actual_id = await self._resolve_case_id(case_id)
+        if not actual_id:
+            return []
+        query = select(VaspAttributionRecord).where(VaspAttributionRecord.case_id == actual_id)
         if trace_id:
             query = query.where(VaspAttributionRecord.trace_id == trace_id)
         if wallet_address:
@@ -132,9 +148,12 @@ class GroundingLayer:
         return enriched
 
     async def get_risk_scores(
-        self, case_id: UUID, trace_id: Optional[UUID] = None, wallet_address: Optional[str] = None
+        self, case_id: Union[UUID, str], trace_id: Optional[UUID] = None, wallet_address: Optional[str] = None
     ) -> List[Dict[str, Any]]:
-        query = select(RiskScoreRecord).where(RiskScoreRecord.case_id == case_id)
+        actual_id = await self._resolve_case_id(case_id)
+        if not actual_id:
+            return []
+        query = select(RiskScoreRecord).where(RiskScoreRecord.case_id == actual_id)
         if trace_id:
             query = query.where(RiskScoreRecord.trace_id == trace_id)
         if wallet_address:
@@ -157,12 +176,15 @@ class GroundingLayer:
             for r in risk_scores
         ]
 
-    async def get_evidence(self, case_id: UUID) -> List[Dict[str, Any]]:
+    async def get_evidence(self, case_id: Union[UUID, str]) -> List[Dict[str, Any]]:
         from app.db.models import Evidence
+        actual_id = await self._resolve_case_id(case_id)
+        if not actual_id:
+            return []
 
         result = await self.db.execute(
             select(Evidence)
-            .where(Evidence.case_id == case_id)
+            .where(Evidence.case_id == actual_id)
             .order_by(Evidence.pinned_at.desc())
         )
         evidence = result.scalars().all()
@@ -180,9 +202,12 @@ class GroundingLayer:
         ]
 
     async def get_transactions(
-        self, case_id: UUID, trace_id: Optional[UUID] = None, limit: int = 100
+        self, case_id: Union[UUID, str], trace_id: Optional[UUID] = None, limit: int = 100
     ) -> List[Dict[str, Any]]:
-        query = select(TransactionRecord).where(TransactionRecord.case_id == case_id)
+        actual_id = await self._resolve_case_id(case_id)
+        if not actual_id:
+            return []
+        query = select(TransactionRecord).where(TransactionRecord.case_id == actual_id)
         if trace_id:
             query = query.where(TransactionRecord.trace_id == trace_id)
         query = query.order_by(TransactionRecord.block_timestamp.desc()).limit(limit)
@@ -208,10 +233,13 @@ class GroundingLayer:
             for t in transactions
         ]
 
-    async def get_trace_runs(self, case_id: UUID) -> List[Dict[str, Any]]:
+    async def get_trace_runs(self, case_id: Union[UUID, str]) -> List[Dict[str, Any]]:
+        actual_id = await self._resolve_case_id(case_id)
+        if not actual_id:
+            return []
         result = await self.db.execute(
             select(TraceRun)
-            .where(TraceRun.case_id == case_id)
+            .where(TraceRun.case_id == actual_id)
             .order_by(TraceRun.created_at.desc())
         )
         traces = result.scalars().all()

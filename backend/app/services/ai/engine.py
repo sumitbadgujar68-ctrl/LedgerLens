@@ -1,11 +1,15 @@
+import asyncio
 import json
 import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from openai import AsyncOpenAI
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.db.database import get_db
 from app.services.ai.citations import CitationGenerator, Citation
 from app.services.ai.context import ContextManager
 from app.services.ai.grounding import GroundingLayer
@@ -13,6 +17,17 @@ from app.services.ai.safety import HallucinationGuard, InsufficientDataHandler, 
 from app.services.ai.tools import ToolRegistry, create_tool_registry
 
 logger = logging.getLogger("ledgerlens.ai.copilot")
+
+# Free shared LLM pools throttle intermittently; retry a bounded number of times
+# so a transient upstream 429 does not surface as a hard 502 to the investigator.
+RATE_LIMIT_BACKOFF_SECONDS = (3.0, 8.0)
+
+
+def _is_rate_limit_error(exc: BaseException) -> bool:
+    if getattr(exc, "status_code", None) == 429 or getattr(exc, "code", None) == 429:
+        return True
+    text = str(exc).lower()
+    return "429" in text or "rate limit" in text or "rate-limited" in text
 
 
 class CaseNotFoundError(Exception):
@@ -72,11 +87,32 @@ class CopilotEngine:
         self.hallucination_guard = HallucinationGuard()
         self.insufficient_data_handler = InsufficientDataHandler()
         
-        if settings.openai_api_key:
-            self.client = AsyncOpenAI(api_key=settings.openai_api_key)
+        if settings.llm_api_key:
+            self.client = AsyncOpenAI(
+                api_key=settings.llm_api_key,
+                base_url=settings.llm_base_url,
+            )
         else:
             self.client = None
-            logger.warning("OpenAI API key not configured — Copilot will return insufficient-data responses")
+            logger.warning("LLM provider key not configured — Copilot will return insufficient-data responses")
+
+    async def _create_completion(self, **kwargs) -> Any:
+        """Call the LLM provider, retrying transient upstream rate limits."""
+        last_error: Optional[BaseException] = None
+        for attempt, backoff in enumerate((0.0, *RATE_LIMIT_BACKOFF_SECONDS)):
+            if backoff:
+                logger.warning(
+                    "LLM provider rate limited; retrying in %.0fs (%d/%d)",
+                    backoff, attempt, len(RATE_LIMIT_BACKOFF_SECONDS),
+                )
+                await asyncio.sleep(backoff)
+            try:
+                return await self.client.chat.completions.create(**kwargs)
+            except Exception as exc:  # noqa: BLE001 - re-raised as ProviderError by callers
+                last_error = exc
+                if not _is_rate_limit_error(exc):
+                    raise
+        raise last_error  # pragma: no cover - loop always returns or raises
 
     async def ask(
         self,
@@ -105,8 +141,8 @@ class CopilotEngine:
         ]
 
         try:
-            response = await self.client.chat.completions.create(
-                model=settings.openai_model,
+            response = await self._create_completion(
+                model=settings.llm_model,
                 messages=messages,
                 tools=tools,
                 tool_choice="auto",
@@ -114,6 +150,21 @@ class CopilotEngine:
                 temperature=settings.openai_temperature,
             )
         except Exception as e:
+            if _is_rate_limit_error(e):
+                logger.warning("Upstream LLM rate limit encountered; generating grounded deterministic fallback with provider unavailable notice")
+                fallback_answer = self._generate_grounded_fallback(question, context)
+                fallback_answer = (
+                    "[NOTICE: AI provider temporarily unavailable — showing grounded forensic synthesis from verified ledger data.]\n\n"
+                    + fallback_answer
+                )
+                available_data = self._context_to_available_data(context)
+                used_citations = self.citation_generator.filter_valid_citations(citations, available_data)
+                return {
+                    "answer": fallback_answer,
+                    "citations": [c.to_dict() for c in used_citations[:5]],
+                    "confidence": 0.7,
+                    "type": ResponseType.INSUFFICIENT_DATA.value,
+                }
             logger.exception("OpenAI API error")
             raise ProviderError(f"LLM service error: {str(e)}") from e
 
@@ -135,14 +186,29 @@ class CopilotEngine:
                 })
             
             try:
-                response = await self.client.chat.completions.create(
-                    model=settings.openai_model,
+                response = await self._create_completion(
+                    model=settings.llm_model,
                     messages=messages,
                     max_tokens=settings.openai_max_tokens,
                     temperature=settings.openai_temperature,
                 )
                 message = response.choices[0].message
             except Exception as e:
+                if _is_rate_limit_error(e):
+                    logger.warning("Upstream LLM rate limit on follow-up; generating grounded deterministic fallback with provider unavailable notice")
+                    fallback_answer = self._generate_grounded_fallback(question, context)
+                    fallback_answer = (
+                        "[NOTICE: AI provider temporarily unavailable — showing grounded forensic synthesis from verified ledger data.]\n\n"
+                        + fallback_answer
+                    )
+                    available_data = self._context_to_available_data(context)
+                    used_citations = self.citation_generator.filter_valid_citations(citations, available_data)
+                    return {
+                        "answer": fallback_answer,
+                        "citations": [c.to_dict() for c in used_citations[:5]],
+                        "confidence": 0.7,
+                        "type": ResponseType.INSUFFICIENT_DATA.value,
+                    }
                 logger.exception("OpenAI API error on follow-up")
                 raise ProviderError(f"LLM service error: {str(e)}") from e
 
@@ -171,6 +237,35 @@ class CopilotEngine:
     async def explain_risk(self, case_id: UUID, wallet_address: str, trace_id: Optional[UUID] = None) -> Dict[str, Any]:
         question = f"Explain the risk score for wallet {wallet_address}. Break down each contributing factor with its evidence and weight."
         return await self.ask(case_id, question, trace_id)
+
+    def _generate_grounded_fallback(self, question: str, context: Dict[str, Any]) -> str:
+        case = context.get("case", {})
+        txs = context.get("transactions", [])
+        patterns = context.get("patterns", [])
+        attributions = context.get("attributions", [])
+        risk = context.get("risk_scores", [])
+        graph = context.get("graph", {})
+
+        node_count = len(graph.get("nodes", [])) if isinstance(graph, dict) else 0
+        tx_count = len(txs)
+
+        parts = [
+            f"Case: {case.get('title', 'Investigation')} ({str(case.get('blockchain', 'ethereum')).upper()})",
+            f"Primary Wallet: {case.get('reported_wallet_address')}",
+            f"Forensic Activity: {tx_count} analyzed canonical transactions across {node_count} graph nodes.",
+        ]
+        if patterns:
+            pat_names = [p.get("pattern_type", "") for p in patterns[:3]]
+            parts.append(f"Detected Patterns: {len(patterns)} typologies identified ({', '.join(pat_names)}).")
+        if attributions:
+            ent_names = [a.get("entity_name", "") for a in attributions[:3]]
+            parts.append(f"Entity Intelligence: {len(attributions)} counterparties attributed ({', '.join(ent_names)}).")
+        if risk:
+            top_risk = risk[0]
+            parts.append(f"Risk Assessment: Score {top_risk.get('score', 'N/A')}/100 ({str(top_risk.get('risk_category', 'N/A')).upper()}).")
+
+        parts.append("[Grounded forensic synthesis derived from verified ledger data.]")
+        return "\n\n".join(parts)
 
     async def _build_context(
         self,
@@ -319,5 +414,5 @@ Answer using only the above context. Cite sources inline using [0], [1], etc. co
         }
 
 
-def get_copilot_engine(db) -> CopilotEngine:
+def get_copilot_engine(db: AsyncSession = Depends(get_db)) -> CopilotEngine:
     return CopilotEngine(db)

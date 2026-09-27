@@ -21,11 +21,13 @@ class RiskFactorCalculator:
         patterns: List[PatternFinding],
         attributions: List[Any],
         db_session=None,
+        linked_case_count: Optional[int] = None,
     ):
         self.graph = graph
         self.patterns = patterns
         self.attributions = attributions
         self.db_session = db_session
+        self.linked_case_count = linked_case_count
 
         self._patterns_by_wallet: Dict[str, List[PatternFinding]] = defaultdict(list)
         for p in patterns:
@@ -249,38 +251,20 @@ class RiskFactorCalculator:
         description = ""
         confidence = Decimal("0.00")
 
-        if self.db_session is None:
+        count = self.linked_case_count
+        if count is None:
+            count = self._query_repeated_case_count(wallet_address)
+
+        if count is None:
             weight = 0
-            description = "Repeated case linkage check skipped (no database session)"
-            return RiskFactor(
-                factor_type=RiskFactorType.REPEATED_CASE_LINKAGE,
-                weight=weight,
-                evidence=evidence,
-                description=description,
-                confidence=confidence,
-            )
-
-        try:
-            from sqlalchemy import select, func
-            from app.db.models import RiskScoreRecord
-
-            stmt = select(func.count(RiskScoreRecord.risk_score_id)).where(
-                RiskScoreRecord.wallet_address == wallet_address
-            )
-            result = self.db_session.execute(stmt)
-            count = result.scalar() or 0
-
-            if count > 1:
-                weight = DEFAULT_WEIGHTS[RiskFactorType.REPEATED_CASE_LINKAGE]
-                confidence = Decimal("0.80")
-                evidence.additional_data["linked_case_count"] = count
-                description = f"Wallet appears in {count} previous cases"
-            else:
-                weight = 0
-                description = "No repeated case linkage found"
-        except Exception:
+            description = "Repeated case linkage check skipped (count unavailable)"
+        elif count > 1:
+            confidence = Decimal("0.80")
+            evidence.additional_data["linked_case_count"] = count
+            description = f"Wallet appears in {count} previous cases"
+        else:
             weight = 0
-            description = "Repeated case linkage check failed (database error)"
+            description = "No repeated case linkage found"
 
         return RiskFactor(
             factor_type=RiskFactorType.REPEATED_CASE_LINKAGE,
@@ -289,3 +273,28 @@ class RiskFactorCalculator:
             description=description,
             confidence=confidence,
         )
+
+    def _query_repeated_case_count(self, wallet_address: str) -> Optional[int]:
+        """Synchronous-only fallback.
+
+        Async sessions cannot be queried from this sync code path; callers on an
+        async session must pre-fetch the count and pass ``linked_case_count``.
+        """
+        if self.db_session is None:
+            return None
+        from sqlalchemy.ext.asyncio import AsyncSession
+
+        if isinstance(self.db_session, AsyncSession):
+            return None
+        try:
+            from sqlalchemy import select, func
+
+            from app.db.models import RiskScoreRecord
+
+            stmt = select(func.count(RiskScoreRecord.risk_score_id)).where(
+                RiskScoreRecord.wallet_address == wallet_address
+            )
+            result = self.db_session.execute(stmt)
+            return int(result.scalar() or 0)
+        except Exception:
+            return None

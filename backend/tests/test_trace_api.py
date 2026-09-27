@@ -119,7 +119,7 @@ class StubDB:
 @pytest.mark.asyncio
 async def test_service_execute_trace_with_fake_adapter():
     case = make_case()
-    service = TraceService(FakeAdapter())
+    service = TraceService({'ethereum': FakeAdapter()})
     stub = StubDB(case)
     trace = await service.execute_trace(
         db=stub,  # type: ignore[arg-type]
@@ -136,7 +136,7 @@ async def test_service_execute_trace_with_fake_adapter():
 @pytest.mark.asyncio
 async def test_service_execute_trace_provider_failure_not_empty_success():
     case = make_case()
-    service = TraceService(FakeAdapter(error=BlockchainErrorCode.RATE_LIMITED))
+    service = TraceService({'ethereum': FakeAdapter(error=BlockchainErrorCode.RATE_LIMITED)})
     stub = StubDB(case)
     trace = await service.execute_trace(
         db=stub,  # type: ignore[arg-type]
@@ -201,7 +201,7 @@ async def test_api_with_overridden_dependencies_success():
 
     class APIService(TraceService):
         async def get_case(self, db, case_id):
-            return case if case.case_id == case_id else None
+            return case if str(case.case_id) == str(case_id) else None
 
         async def execute_trace(
             self,
@@ -226,7 +226,7 @@ async def test_api_with_overridden_dependencies_success():
             self._last_stub = stub
             return trace
 
-    service = APIService(fake)
+    service = APIService({"ethereum": fake})
 
     from app.api.v1 import traces as traces_module
     from app.services.blockchain import (

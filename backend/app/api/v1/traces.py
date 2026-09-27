@@ -31,12 +31,22 @@ logger = logging.getLogger("ledgerlens.api.traces")
 router = APIRouter(prefix="/cases", tags=["traces"])
 
 
-def get_blockchain_adapter() -> BlockchainAdapter:
+def get_blockchain_adapter() -> dict:
     from app.config import settings
     from app.services.blockchain import AlchemyProvider, EthereumAdapter
+    from app.services.blockchain.adapter import BitcoinAdapter, TronAdapter
     from app.services.blockchain import BlockchainErrorCode, TransferFetchResult
 
+    from app.services.blockchain.providers.bitcoin import BlockstreamBitcoinProvider
+    from app.services.blockchain.providers.tron import TronGridProvider
+
     api_key = settings.alchemy_api_key
+    
+    adapters = {
+        "bitcoin": BitcoinAdapter(provider=BlockstreamBitcoinProvider()),
+        "tron": TronAdapter(provider=TronGridProvider()),
+    }
+    
     if not api_key:
         class UnconfiguredAdapter(BlockchainAdapter):
             provider_name = "alchemy"
@@ -52,14 +62,17 @@ def get_blockchain_adapter() -> BlockchainAdapter:
                     errors=["ALCHEMY_API_KEY is not configured"],
                 )
 
-        return UnconfiguredAdapter()
-    return EthereumAdapter(
-        provider=AlchemyProvider(api_key=api_key, network=settings.alchemy_network)
-    )
+        adapters["ethereum"] = UnconfiguredAdapter()
+    else:
+        adapters["ethereum"] = EthereumAdapter(provider=AlchemyProvider(api_key=api_key, network=settings.alchemy_network))
+        
+    return adapters
+    
 
 
-def get_trace_service(adapter: BlockchainAdapter = Depends(get_blockchain_adapter)) -> TraceService:
-    return TraceService(adapter)
+
+def get_trace_service(adapters: dict = Depends(get_blockchain_adapter)) -> TraceService:
+    return TraceService(adapters)
 
 
 def _build_response(trace, transactions=None, graph_payload=None) -> TraceResponse:
@@ -132,9 +145,10 @@ async def _load_trace_payload(db: AsyncSession, trace):
                 select(TransactionRecord)
                 .where(TransactionRecord.trace_id == trace.trace_id)
                 .order_by(
-                    TransactionRecord.block_number.asc().nulls_last(),
+                    TransactionRecord.block_number.desc().nulls_last(),
                     TransactionRecord.transaction_hash.asc(),
                 )
+                .limit(100)
             )
         )
         .scalars()
@@ -184,7 +198,7 @@ async def _load_trace_payload(db: AsyncSession, trace):
     status_code=status.HTTP_201_CREATED,
 )
 async def create_trace(
-    case_id: UUID,
+    case_id: str,
     request: Optional[TraceRequest] = None,
     db: AsyncSession = Depends(get_db),
     service: TraceService = Depends(get_trace_service),
@@ -196,7 +210,7 @@ async def create_trace(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
-    require_case_ownership(case, principal, case_id)
+    require_case_ownership(case, principal, case.case_id)
 
     body = request or TraceRequest()
     if body.start_wallet_address is None:
@@ -225,7 +239,7 @@ async def create_trace(
 
 @router.get("/{case_id}/traces/{trace_id}", response_model=TraceResponse)
 async def get_trace(
-    case_id: UUID,
+    case_id: str,
     trace_id: UUID,
     db: AsyncSession = Depends(get_db),
     service: TraceService = Depends(get_trace_service),
@@ -237,8 +251,8 @@ async def get_trace(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
-    require_case_ownership(case, principal, case_id)
-    trace = await service.get_trace(db, case_id, trace_id)
+    require_case_ownership(case, principal, case.case_id)
+    trace = await service.get_trace(db, case.case_id, trace_id)
     if not trace:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -250,7 +264,7 @@ async def get_trace(
 
 @router.get("/{case_id}/traces", response_model=list[TraceResponse])
 async def list_traces(
-    case_id: UUID,
+    case_id: str,
     limit: int = 20,
     db: AsyncSession = Depends(get_db),
     service: TraceService = Depends(get_trace_service),
@@ -262,8 +276,8 @@ async def list_traces(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
-    require_case_ownership(case, principal, case_id)
-    traces = await service.list_traces(db, case_id, limit=limit)
+    require_case_ownership(case, principal, case.case_id)
+    traces = await service.list_traces(db, case.case_id, limit=limit)
     responses = []
     for trace in traces:
         transactions, graph_payload = await _load_trace_payload(db, trace)

@@ -10,57 +10,86 @@ export interface TransferEdgeData {
   timestamp?: string | null;
 }
 
-export const TransferEdge: React.FC<EdgeProps<TransferEdgeData>> = memo(({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-  data,
-  selected,
-}) => {
-  const [edgePath, labelX, labelY] = getBezierPath({
+export const TransferEdge: React.FC<EdgeProps<TransferEdgeData>> = memo(
+  ({
+    id,
     sourceX,
     sourceY,
-    sourcePosition,
     targetX,
     targetY,
+    sourcePosition,
     targetPosition,
-  });
+    data,
+    selected,
+    animated,
+  }) => {
+    const [edgePath, labelX, labelY] = getBezierPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+    });
 
-  const amount = data?.amount !== undefined ? Number(data.amount).toLocaleString(undefined, { maximumFractionDigits: 4 }) : '—';
-  const asset = data?.asset || 'ETH';
+    const amount =
+      data?.amount !== undefined
+        ? Number(data.amount).toLocaleString(undefined, {
+            maximumFractionDigits: 4,
+          })
+        : '—';
+    const asset = data?.asset || 'ETH';
 
-  return (
-    <>
-      <path
-        id={id}
-        className={`react-flow__edge-path transition-all stroke-2 ${
-          selected ? 'stroke-blue-400 stroke-[3px]' : 'stroke-slate-600 hover:stroke-slate-400'
-        }`}
-        d={edgePath}
-        markerEnd="url(#arrow)"
-      />
-      <EdgeLabelRenderer>
-        <div
+    const strokeColor = selected ? 'var(--color-primary)' : 'var(--color-primary)';
+    const strokeWidth = selected ? 3 : 2;
+    const filter = selected
+      ? 'drop-shadow(0 0 4px rgba(255,159,67,0.7))'
+      : 'drop-shadow(0 0 2px rgba(255,159,67,0.25))';
+
+    return (
+      <>
+        {/* Animated dashes to show flow direction */}
+        <path
+          id={`${id}-bg`}
+          d={edgePath}
+          stroke="rgba(255,159,67,0.12)"
+          strokeWidth={strokeWidth + 4}
+          fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          id={id}
+          className={animated ? 'react-flow__edge-path animated' : 'react-flow__edge-path'}
+          d={edgePath}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={selected ? '0' : '6 4'}
           style={{
-            position: 'absolute',
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            pointerEvents: 'all',
+            filter,
+            transition: 'stroke 0.2s, stroke-width 0.2s',
           }}
-          className={`px-2 py-0.5 rounded border text-[10px] font-mono shadow-md cursor-pointer transition-all ${
-            selected
-              ? 'bg-blue-950 text-blue-200 border-blue-400 font-bold scale-105'
-              : 'bg-[#0D1017] text-slate-300 border-[#1F2637] hover:border-slate-500'
-          }`}
-        >
-          <span className="text-emerald-400 font-bold">{amount}</span> {asset}
-        </div>
-      </EdgeLabelRenderer>
-    </>
-  );
-});
+        />
+        <EdgeLabelRenderer>
+          <div
+            style={{
+              position: 'absolute',
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              pointerEvents: 'all',
+            }}
+            className={`px-2 py-0.5 rounded border text-[10px] font-[JetBrains_Mono] shadow-sm cursor-pointer transition-all ${
+              selected
+                ? 'bg-[var(--color-surface-container)] text-[#00F0FF] border-[#00F0FF]/60 font-bold ring-1 ring-[#00F0FF]/40'
+                : 'bg-[var(--color-surface-container-low)] text-[var(--color-on-surface-variant)] border-[var(--color-outline)] hover:border-[#00F0FF]/50 hover:text-[var(--color-on-surface)] font-semibold'
+            }`}
+          >
+            <span className="font-bold" style={{ color: selected ? '#00F0FF' : 'var(--color-tertiary)' }}>{amount}</span>{' '}{asset}
+          </div>
+        </EdgeLabelRenderer>
+      </>
+    );
+  }
+);
 
 TransferEdge.displayName = 'TransferEdge';

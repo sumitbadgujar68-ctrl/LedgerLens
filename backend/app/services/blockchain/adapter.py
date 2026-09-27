@@ -60,6 +60,7 @@ class EthereumAdapter(BlockchainAdapter):
             )
         return cleaned.lower()
 
+
     async def fetch_transfers(self, query: TransferQuery) -> TransferFetchResult:
         provider = self.provider_name
         try:
@@ -245,3 +246,32 @@ class EthereumAdapter(BlockchainAdapter):
             has_more=outbound.has_more or inbound.has_more,
             errors=errors,
         )
+
+_BTC_ADDRESS_RE = re.compile(r"^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}$")
+_TRON_ADDRESS_RE = re.compile(r"^T[a-zA-HJ-NP-Z0-9]{33}$")
+
+def is_valid_bitcoin_address(address: str) -> bool:
+    return bool(address) and bool(_BTC_ADDRESS_RE.match(address.strip()))
+
+def is_valid_tron_address(address: str) -> bool:
+    return bool(address) and bool(_TRON_ADDRESS_RE.match(address.strip()))
+
+class BitcoinAdapter(EthereumAdapter):
+    def validate_address(self, address: str) -> str:
+        cleaned = (address or "").strip()
+        if not is_valid_bitcoin_address(cleaned):
+            raise InvalidInputError(
+                "Invalid Bitcoin address",
+                provider=self.provider_name,
+            )
+        return cleaned
+
+class TronAdapter(EthereumAdapter):
+    def validate_address(self, address: str) -> str:
+        cleaned = (address or "").strip()
+        if not is_valid_tron_address(cleaned):
+            raise InvalidInputError(
+                "Invalid Tron address",
+                provider=self.provider_name,
+            )
+        return cleaned

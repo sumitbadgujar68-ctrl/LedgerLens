@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1 import auth, cases, copilot, reports, risk, traces
+from app.api.v1 import auth, cases, copilot, findings, reports, risk, traces
 from app.config import settings
 from app.services.auth.deps import require_auth
 
@@ -29,6 +29,7 @@ app.include_router(cases.router, prefix="/api/v1", dependencies=_protected)
 app.include_router(traces.router, prefix="/api/v1", dependencies=_protected)
 app.include_router(risk.router, prefix="/api/v1", dependencies=_protected)
 app.include_router(copilot.router, prefix="/api/v1", dependencies=_protected)
+app.include_router(findings.router, prefix="/api/v1", dependencies=_protected)
 app.include_router(reports.router, prefix="/api/v1", dependencies=_protected)
 
 @app.get("/")

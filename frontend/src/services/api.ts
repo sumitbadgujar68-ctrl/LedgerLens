@@ -1,4 +1,20 @@
-import type { Case, CaseCreatePayload, TraceRequestPayload, TraceResponse } from '../types';
+import type {
+  AttributionListResponse,
+  Case,
+  CaseCreatePayload,
+  CopilotExplainRiskPayload,
+  CopilotResponse,
+  EvidenceListResponse,
+  PatternListResponse,
+  ReportGeneratePayload,
+  ReportJobResponse,
+  ReportListResponse,
+  RiskExplanationResponse,
+  RiskScoreResponse,
+  RiskSummaryResponse,
+  TraceRequestPayload,
+  TraceResponse,
+} from '../types';
 import { getToken, notifyUnauthorized } from './auth';
 import type { Investigator, LoginResponse } from './auth';
 
@@ -7,12 +23,14 @@ const API_BASE = '/api/v1';
 export class ApiError extends Error {
   code?: string;
   details?: Record<string, unknown>;
-  
-  constructor(message: string, code?: string, details?: Record<string, unknown>) {
+  status?: number;
+
+  constructor(message: string, code?: string, details?: Record<string, unknown>, status?: number) {
     super(message);
     this.name = 'ApiError';
     this.code = code;
     this.details = details;
+    this.status = status;
   }
 }
 
@@ -41,10 +59,19 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     if (response.status === 401) {
       notifyUnauthorized();
     }
-    throw new ApiError(message, code, details);
+    throw new ApiError(message, code, details, response.status);
   }
 
   return response.json();
+}
+
+export function isNotFoundError(error: unknown): boolean {
+  if (error instanceof ApiError) {
+    if (error.status === 404) return true;
+    const code = (error.code || '').toUpperCase();
+    return code.includes('NOT_FOUND') || code === 'NO_TRACE';
+  }
+  return false;
 }
 
 export const api = {
@@ -87,6 +114,62 @@ export const api = {
 
   async getTraceById(caseId: string, traceId: string): Promise<TraceResponse> {
     return request<TraceResponse>(`/cases/${caseId}/traces/${traceId}`);
+  },
+
+  async askCopilot(caseId: string, question: string): Promise<CopilotResponse> {
+    return request<CopilotResponse>(`/cases/${caseId}/copilot/ask`, {
+      method: 'POST',
+      body: JSON.stringify({ question }),
+    });
+  },
+
+  async summarizeCase(caseId: string): Promise<CopilotResponse> {
+    return request<CopilotResponse>(`/cases/${caseId}/copilot/summarize`, {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+  },
+
+  async explainRisk(caseId: string, payload: CopilotExplainRiskPayload): Promise<CopilotResponse> {
+    return request<CopilotResponse>(`/cases/${caseId}/copilot/explain_risk`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async getWalletRisk(caseId: string, walletAddress: string): Promise<RiskScoreResponse> {
+    return request<RiskScoreResponse>(`/cases/${caseId}/wallets/${walletAddress}/risk`);
+  },
+
+  async getRiskExplanation(riskScoreId: string): Promise<RiskExplanationResponse> {
+    return request<RiskExplanationResponse>(`/cases/risk/${riskScoreId}/explanation`);
+  },
+
+  async getCaseRiskSummary(caseId: string): Promise<RiskSummaryResponse> {
+    return request<RiskSummaryResponse>(`/cases/${caseId}/risk-summary`);
+  },
+
+  async generateReport(caseId: string, payload: ReportGeneratePayload): Promise<ReportJobResponse> {
+    return request<ReportJobResponse>(`/cases/${caseId}/reports`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async listReports(caseId: string): Promise<ReportListResponse> {
+    return request<ReportListResponse>(`/cases/${caseId}/reports`);
+  },
+
+  async getCasePatterns(caseId: string): Promise<PatternListResponse> {
+    return request<PatternListResponse>(`/cases/${caseId}/patterns`);
+  },
+
+  async getCaseEvidence(caseId: string): Promise<EvidenceListResponse> {
+    return request<EvidenceListResponse>(`/cases/${caseId}/evidence`);
+  },
+
+  async getCaseAttributions(caseId: string): Promise<AttributionListResponse> {
+    return request<AttributionListResponse>(`/cases/${caseId}/attributions`);
   },
 
   async login(username: string, password: string): Promise<LoginResponse> {

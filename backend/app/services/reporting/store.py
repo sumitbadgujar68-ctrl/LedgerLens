@@ -22,7 +22,10 @@ from typing import Any, Dict, List, Optional, Union
 from uuid import UUID, uuid4
 
 from sqlalchemy import select
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.database import get_db
 from app.db.models import JobRecord, ReportRecord
 from app.services.reporting.artifacts import (
     ReportArtifactNotFoundError,
@@ -228,5 +231,5 @@ class ReportStore:
             )
 
 
-def get_report_store(db) -> ReportStore:
+def get_report_store(db: AsyncSession = Depends(get_db)) -> ReportStore:
     return ReportStore(db)

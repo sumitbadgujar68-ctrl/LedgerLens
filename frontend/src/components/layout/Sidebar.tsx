@@ -1,113 +1,197 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  FolderSearch, 
-  ShieldCheck, 
-  Settings, 
-  LogOut, 
-  Radar,
-  Network
+import {
+  FolderSearch,
+  FileCheck2,
+  FileSpreadsheet,
+  Activity,
+  GitBranch,
+  Server,
+  LogOut,
+  PlusCircle,
+  Network,
+  Settings as SettingsIcon,
+  ChevronRight,
 } from 'lucide-react';
+import { notifySignOut } from '../../services/auth';
+import { api } from '../../services/api';
+import { useInvestigationStore } from '../../store/investigationStore';
 
 export const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { currentCase, setNewCaseModalOpen, language } = useInvestigationStore();
 
-  const navItems = [
+  const handleSignOut = async () => {
+    try {
+      await api.logout();
+    } catch {
+      // ignore
+    } finally {
+      notifySignOut();
+    }
+  };
+
+  type NavItem = {
+    label: string;
+    path: string;
+    icon: React.FC<any>;
+    active: boolean;
+    showPulse?: boolean;
+    count?: string;
+  };
+
+  type NavGroup = {
+    title: string;
+    badge?: string;
+    items: NavItem[];
+  };
+
+  const navGroups: NavGroup[] = [
     {
-      label: 'Investigations',
-      icon: FolderSearch,
-      path: '/',
-      active: location.pathname === '/' || location.pathname.startsWith('/cases'),
+      title: language === 'HI' ? 'फोरेंसिक कोर' : 'FORENSIC CORE',
+      items: [
+        {
+          label: language === 'HI' ? 'जांच (Investigate)' : 'Investigate',
+          path: '/',
+          icon: Activity,
+          active: location.pathname === '/',
+        },
+        {
+          label: language === 'HI' ? 'लाइव ट्रेस' : 'Live Trace',
+          path: currentCase ? `/cases/${currentCase.case_id}/graph` : '/cases',
+          icon: GitBranch,
+          active: location.pathname.endsWith('/graph') || location.pathname.endsWith('/trace'),
+          showPulse: true,
+        },
+        {
+          label: language === 'HI' ? 'क्लस्टरिंग' : 'Clustering',
+          path: currentCase ? `/cases/${currentCase.case_id}/patterns` : '/cases',
+          icon: Network,
+          active: location.pathname.endsWith('/patterns') || location.pathname === '/attribution',
+        },
+      ],
     },
     {
-      label: 'Evidence Custody',
-      icon: ShieldCheck,
-      path: '/evidence',
-      active: location.pathname === '/evidence',
-    },
-    {
-      label: 'Node & Telemetry',
-      icon: Settings,
-      path: '/settings',
-      active: location.pathname === '/settings',
+      title: language === 'HI' ? 'कस्टडी एवं डॉज़ियर' : 'CUSTODY & DOSSIERS',
+      items: [
+        {
+          label: language === 'HI' ? 'साक्ष्य लॉकर' : 'Evidence Locker',
+          path: currentCase ? `/cases/${currentCase.case_id}/evidence` : '/cases',
+          icon: FileCheck2,
+          active: location.pathname.endsWith('/evidence'),
+        },
+        {
+          label: language === 'HI' ? 'केस फाइलें' : 'Case Files',
+          path: '/cases',
+          icon: FolderSearch,
+          active: location.pathname === '/cases' || (location.pathname.startsWith('/cases/') && location.pathname.split('/').length <= 3),
+        },
+        {
+          label: language === 'HI' ? 'ऑडिट लॉग' : 'Audit Logs',
+          path: currentCase ? `/cases/${currentCase.case_id}/report` : '/cases',
+          icon: FileSpreadsheet,
+          active: location.pathname.endsWith('/report') || location.pathname === '/reports',
+        },
+      ],
     },
   ];
 
   return (
-    <aside className="w-64 bg-[#0D1017] border-r border-[#1F2637] flex flex-col justify-between select-none shrink-0 min-h-screen">
-      <div>
+    <aside className="w-64 bg-[var(--color-surface-container)] border-r border-[var(--color-outline)] flex flex-col justify-between p-4 shrink-0 h-screen overflow-y-auto">
+      {/* Top Brand & Action Section */}
+      <div className="flex flex-col gap-4">
         {/* Brand Header */}
-        <div className="p-4 border-b border-[#1F2637] flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded bg-blue-600/20 border border-blue-500/50 flex items-center justify-center text-blue-400">
-              <Radar className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="font-bold text-sm tracking-wider text-slate-100 flex items-center gap-1.5">
-                LEDGERLENS
-                <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-blue-900/60 text-blue-300 border border-blue-700/50">
-                  MVP
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-400 font-mono">
-                FORENSIC SUITE v0.3
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Navigation Items */}
-        <nav className="p-3 space-y-1.5">
-          <div className="px-3 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
-            Navigation
+        <div className="flex items-center justify-between pb-6">
+          <div className="flex items-center gap-3 w-full justify-center pb-2">
+            <img src="/logo.png" alt="LedgerLens" className="w-40 h-auto rounded-xl drop-shadow-lg" />
           </div>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.label}
-                to={item.path}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded text-xs font-medium transition-all ${
-                  item.active
-                    ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-[#161B26]'
-                }`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        </div>
+        
+        {/* Primary CTA: New Investigation */}
+        <button 
+          onClick={() => setNewCaseModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] rounded-lg font-[Inter] text-[16px] font-semibold hover:brightness-110 active:scale-95 transition-all duration-150 shadow-sm cursor-pointer">
+          <PlusCircle className="w-[18px] h-[18px]" />
+          <span>New Investigation</span>
+        </button>
+        
+        {/* Navigation Sections */}
+        {navGroups.map((group) => (
+          <div key={group.title} className="flex flex-col gap-1 mt-4">
+            <div className="px-3 py-1 flex items-center justify-between mb-1">
+              <span className="font-[Inter] text-[10px] font-semibold tracking-wider text-[var(--color-on-surface-variant)] uppercase">
+                {group.title}
+              </span>
+            </div>
+            
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  className={`flex items-center gap-3 px-3 py-2.5 my-0.5 transition-colors duration-150 rounded-lg ${
+                    item.active
+                      ? 'bg-[var(--color-primary)] text-[var(--color-on-primary)] font-[Inter] text-[14px] font-medium'
+                      : 'text-[var(--color-on-surface-variant)] font-[Inter] text-[14px] font-medium hover:text-[var(--color-on-surface)]'
+                  }`}
+                >
+                  <Icon className="w-[18px] h-[18px]" />
+                  <span className="truncate">{item.label}</span>
+                  
+                  <ChevronRight className={`ml-auto w-4 h-4 ${item.active ? 'text-white' : 'text-[var(--color-on-surface-variant)]'}`} />
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
-      {/* Footer System Status & Session */}
-      <div className="p-3 border-t border-[#1F2637] space-y-2">
-        <div className="p-2.5 rounded bg-[#121620] border border-[#1F2637] text-xs">
-          <div className="flex items-center justify-between text-slate-400 mb-1">
-            <span className="flex items-center gap-1.5">
-              <Network className="w-3.5 h-3.5 text-emerald-400" />
-              Provider
+      {/* Sidebar Bottom: Telemetry & Node Health Footer */}
+      <div className="pt-3 border-t border-[var(--color-outline)] flex flex-col gap-2">
+        {/* Live RPC Node Telemetry Panel */}
+        <div className="p-2.5 rounded-lg bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline)] flex flex-col gap-1.5">
+          <div className="flex items-center justify-between font-[JetBrains_Mono] text-[10px] font-semibold tracking-[0.08em]">
+            <span className="flex items-center gap-1.5 text-[var(--color-on-surface)]">
+              <span className="w-2 h-2 rounded-full bg-[var(--color-tertiary)]"></span>
+              RPC NODE HEALTH
             </span>
-            <span className="font-mono text-emerald-400 text-[11px]">ALCH-ETH</span>
+            <span className="text-[var(--color-tertiary)] font-[JetBrains_Mono] font-normal">99.98%</span>
           </div>
-          <div className="text-[11px] text-slate-400 flex justify-between">
-            <span>Latency</span>
-            <span className="font-mono text-slate-300">~142ms</span>
+          <div className="flex items-center justify-between font-[JetBrains_Mono] text-[11px] text-[var(--color-on-surface-variant)]">
+            <span>PEERS: 64</span>
+            <span>LAT: 12ms</span>
+          </div>
+          <div className="font-[JetBrains_Mono] text-[10px] text-[var(--color-on-surface-variant)]/80 truncate">
+            BLOCK: #19,842,912
           </div>
         </div>
-
-        <div className="flex items-center justify-between px-2 py-1 text-xs text-slate-400">
-          <span className="font-mono text-[11px]">OFFICER #402</span>
-          <button 
-            onClick={() => alert('Session termination requested')} 
-            className="hover:text-red-400 p-1 rounded hover:bg-slate-800 transition-colors"
-            title="Log out"
+        
+        {/* Footer Buttons */}
+        <div className="flex flex-col gap-0.5">
+          <Link
+            to="/settings"
+            className="flex items-center gap-2.5 px-2.5 py-1.5 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-high)] rounded text-[12px] font-[Inter] transition-colors cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
+            <Server className="w-[16px] h-[16px]" />
+            <span>RPC Node Health</span>
+          </Link>
+          <Link
+            to="/settings"
+            className="flex items-center gap-2.5 px-2.5 py-1.5 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-high)] rounded text-[12px] font-[Inter] transition-colors cursor-pointer"
+          >
+            <SettingsIcon className="w-[16px] h-[16px]" />
+            <span>System Settings</span>
+          </Link>
+          <button onClick={handleSignOut} className="flex items-center gap-2.5 px-2.5 py-1.5 text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded text-[12px] font-[Inter] transition-colors cursor-pointer">
+            <LogOut className="w-[16px] h-[16px]" />
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
     </aside>
   );
 };
+
+
+

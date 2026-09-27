@@ -1,233 +1,284 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '../../services/api';
-import type { CaseCreatePayload } from '../../types';
+import type { RiskSummaryResponse } from '../../types';
+import { useInvestigationStore } from '../../store/investigationStore';
 import { TopBar } from '../layout/TopBar';
-import { NewCaseModal } from '../cases/NewCaseModal';
-import { AddressDisplay, StatusBadge } from '../common/Badge';
-import { 
-  FolderSearch, 
-  Layers, 
-  DollarSign, 
-  Activity, 
-  ArrowUpRight, 
-  Search,
+import {
+  Download,
+  ArrowUpRight,
+  ShieldAlert,
 } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const { setNewCaseModalOpen, globalSearchQuery } = useInvestigationStore();
+  const [statusFilter] = useState('all');
   const [chainFilter, setChainFilter] = useState('all');
+  const [riskFilter, setRiskFilter] = useState('all');
 
   const { data: cases = [], isLoading } = useQuery({
     queryKey: ['cases'],
     queryFn: () => api.getCases(),
   });
 
-  const createMutation = useMutation({
-    mutationFn: (payload: CaseCreatePayload) => api.createCase(payload),
-    onSuccess: (newCase) => {
-      queryClient.invalidateQueries({ queryKey: ['cases'] });
-      navigate(`/cases/${newCase.case_id}`);
+  const riskSummaries = useQuery({
+    queryKey: ['case-risk-summaries', cases.map(c => c.case_id)],
+    queryFn: async () => {
+      const results: Record<string, RiskSummaryResponse | null> = {};
+      await Promise.all(
+        cases.map(async (c) => {
+          try {
+            const summary = await api.getCaseRiskSummary(c.case_id);
+            results[c.case_id] = summary;
+          } catch {
+            results[c.case_id] = null;
+          }
+        })
+      );
+      return results;
     },
+    enabled: cases.length > 0,
   });
 
-  const totalCases = cases.length;
-  const activeCases = cases.filter((c) => c.status === 'active' || c.status === 'under_investigation').length;
-  const totalTrackedAmount = cases.reduce((sum, c) => sum + (Number(c.reported_amount) || 0), 0);
+  const getRiskScore = useCallback((caseId: string): number | null => {
+    const summary = riskSummaries.data?.[caseId];
+    return summary?.average_score ?? null;
+  }, [riskSummaries.data]);
 
-  const filteredCases = cases.filter((c) => {
-    const matchesSearch =
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.case_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.reported_wallet_address.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredCases = useMemo(() => {
+    return cases.filter((c) => {
+      const q = globalSearchQuery ? globalSearchQuery.toLowerCase() : '';
+      const matchesSearch =
+        !q ||
+        c.title.toLowerCase().includes(q) ||
+        c.case_number.toLowerCase().includes(q) ||
+        c.reported_wallet_address.toLowerCase().includes(q) ||
+        c.fraud_type.toLowerCase().includes(q);
 
-    const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
-    const matchesChain = chainFilter === 'all' || c.blockchain === chainFilter;
+      const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
+      const matchesChain = chainFilter === 'all' || c.blockchain === chainFilter;
 
-    return matchesSearch && matchesStatus && matchesChain;
-  });
+      const riskScore = getRiskScore(c.case_id);
+      const matchesRisk =
+        riskFilter === 'all'
+          ? true
+          : riskFilter === 'high'
+          ? riskScore !== null && riskScore >= 70
+          : riskFilter === 'medium'
+          ? riskScore !== null && riskScore >= 40 && riskScore < 70
+          : riskScore !== null && riskScore < 40;
+
+      return matchesSearch && matchesStatus && matchesChain && matchesRisk;
+    });
+  }, [cases, globalSearchQuery, statusFilter, chainFilter, riskFilter, getRiskScore]);
+
+  const handleExportCSV = () => {
+    const headers = 'Case Number,Title,Subject Address,Blockchain,Fraud Type,Status,Risk Score,Created At\n';
+    const rows = filteredCases
+      .map((c) => {
+        const riskScore = getRiskScore(c.case_id);
+        return `"${c.case_number}","${c.title}","${c.reported_wallet_address}","${c.blockchain}","${c.fraud_type}","${c.status}",${riskScore ?? ''},"${c.created_at}"`;
+      })
+      .join('\n');
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `LedgerLens_Cases_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#090B10]">
-      <TopBar onNewCase={() => setIsModalOpen(true)} />
+    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[var(--color-surface-dim)] text-[var(--color-on-surface)] select-none">
+      <TopBar
+        onNewCase={() => setNewCaseModalOpen(true)}
+      />
 
-      <main className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-[#121620] border border-[#1F2637] rounded p-4">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>ACTIVE INVESTIGATIONS</span>
-              <Activity className="w-4 h-4 text-blue-400" />
+      <main className="flex-1 overflow-auto p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[var(--color-outline)] pb-4">
+            <div>
+              <h1 className="text-2xl font-bold tracking-wide text-[var(--color-on-surface)]">Investigations</h1>
+              <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">Manage and track ongoing blockchain forensics cases.</p>
             </div>
-            <div className="mt-2 text-2xl font-bold font-mono text-slate-100">
-              {activeCases} <span className="text-xs font-normal text-slate-400">/ {totalCases} total</span>
-            </div>
-          </div>
-
-          <div className="bg-[#121620] border border-[#1F2637] rounded p-4">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>TRACKED LOSS VOLUME</span>
-              <DollarSign className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="mt-2 text-2xl font-bold font-mono text-emerald-400">
-              {totalTrackedAmount > 0 ? totalTrackedAmount.toLocaleString() : '0.00'} <span className="text-xs font-normal text-slate-400 font-sans">ETH/USD</span>
-            </div>
-          </div>
-
-          <div className="bg-[#121620] border border-[#1F2637] rounded p-4">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>SUPPORTED NETWORKS</span>
-              <Layers className="w-4 h-4 text-amber-400" />
-            </div>
-            <div className="mt-2 text-base font-bold font-mono text-slate-200">
-              ETH <span className="text-xs text-slate-400">• TRON • BTC • SOL</span>
-            </div>
-          </div>
-
-          <div className="bg-[#121620] border border-[#1F2637] rounded p-4">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
-              <span>RPC ENGINE</span>
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            </div>
-            <div className="mt-2 text-sm font-bold font-mono text-emerald-400">
-              AlchemyProvider <span className="text-xs text-slate-400 block font-normal">HTTP Normalization Active</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#121620] p-3 rounded border border-[#1F2637]">
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search by case title, case number, or seed address..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#090B10] border border-[#1F2637] rounded pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-400 focus:outline-none focus:border-blue-500 font-mono"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-[#090B10] border border-[#1F2637] rounded px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer"
+            <button
+              onClick={() => setNewCaseModalOpen(true)}
+              className="inline-flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)] hover:brightness-110 rounded-xl text-[13px] font-bold text-[var(--color-on-surface)] shadow-sm transition-colors"
             >
-              <option value="all">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="under_investigation">Under Investigation</option>
-              <option value="closed">Closed</option>
-              <option value="archived">Archived</option>
-            </select>
-
-            <select
-              value={chainFilter}
-              onChange={(e) => setChainFilter(e.target.value)}
-              className="bg-[#090B10] border border-[#1F2637] rounded px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer font-mono"
-            >
-              <option value="all">All Blockchains</option>
-              <option value="ethereum">Ethereum</option>
-              <option value="tron">Tron</option>
-              <option value="bitcoin">Bitcoin</option>
-              <option value="solana">Solana</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="bg-[#121620] border border-[#1F2637] rounded overflow-hidden">
-          <div className="px-4 py-3 border-b border-[#1F2637] flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-300 font-mono">
-              Investigation Dockets ({filteredCases.length})
-            </h2>
+              + New Case
+            </button>
           </div>
 
-          {isLoading ? (
-            <div className="p-12 text-center text-xs text-slate-400 font-mono">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-              Loading dockets from database...
+          {/* Metric Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Total Cases', value: cases.length.toString(), trend: '', color: 'text-[var(--color-secondary)]' },
+              { label: 'Active Investigations', value: cases.filter(c => c.status === 'active' || c.status === 'under_investigation').length.toString(), trend: '', color: 'text-[var(--color-secondary)]' },
+              { label: 'Critical Risk', value: cases.filter(c => (getRiskScore(c.case_id) ?? 0) >= 70).length.toString(), trend: '', color: 'text-[var(--color-error)]' },
+              { label: 'Avg Resolution', value: 'N/A', trend: '', color: 'text-[var(--color-on-surface-variant)]' },
+            ].map((metric) => (
+              <div key={metric.label} className="bg-[var(--color-surface-container-low)] rounded-xl p-5 border border-[var(--color-outline)]/50 flex flex-col justify-between h-32 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span className="text-[13px] text-[var(--color-on-surface-variant)] font-medium">{metric.label}</span>
+                <div className="flex items-end justify-between">
+                  <span className="text-2xl font-bold text-[var(--color-on-surface)]">{metric.value}</span>
+                  <span className={`text-[11px] font-semibold ${metric.color}`}>
+                    {metric.trend}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Filters & Search */}
+          <div className="bg-[var(--color-surface-container-low)] p-4 rounded-xl border border-[var(--color-outline)]/50 space-y-4">
+            <div className="flex flex-col lg:flex-row justify-between gap-4">
+              <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar">
+                <div className="flex items-center gap-1 bg-[var(--color-surface-dim)] p-1 rounded-lg border border-[var(--color-outline)]">
+                  <button onClick={() => setChainFilter('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${chainFilter === 'all' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>All Chains</button>
+                  <button onClick={() => setChainFilter('ethereum')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${chainFilter === 'ethereum' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>Ethereum</button>
+                </div>
+
+                <div className="flex items-center gap-1 bg-[var(--color-surface-dim)] p-1 rounded-lg border border-[var(--color-outline)]">
+                  <button onClick={() => setRiskFilter('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'all' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>All Risks</button>
+                  <button onClick={() => setRiskFilter('high')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'high' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-error)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>High Risk</button>
+                  <button onClick={() => setRiskFilter('medium')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'medium' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-tertiary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>Medium Risk</button>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                {/* Search is now in the global TopNav */}
+                <button
+                  onClick={handleExportCSV}
+                  className="flex items-center justify-center p-2 bg-[var(--color-surface-dim)] border border-[var(--color-outline)] rounded-lg text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:border-[var(--color-primary)] transition-colors"
+                  title="Export Report"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          ) : filteredCases.length === 0 ? (
-            <div className="p-12 text-center text-xs text-slate-400 font-mono space-y-3">
-              <FolderSearch className="w-10 h-10 text-slate-600 mx-auto" />
-              <p>No investigation cases found matching the criteria.</p>
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold cursor-pointer"
-              >
-                Create First Investigation
-              </button>
-            </div>
-          ) : (
+          </div>
+
+          {/* Cases Table */}
+          <div className="bg-[var(--color-surface-container-low)] rounded-xl border border-[var(--color-outline)]/50 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-[#0D1017] text-slate-400 border-b border-[#1F2637] font-mono text-[11px]">
-                  <tr>
-                    <th className="p-3">DOCKET #</th>
-                    <th className="p-3">TITLE & TYPOLOGY</th>
-                    <th className="p-3">SEED TARGET ADDRESS</th>
-                    <th className="p-3">REPORTED LOSS</th>
-                    <th className="p-3">CHAIN</th>
-                    <th className="p-3">STATUS</th>
-                    <th className="p-3 text-right">ACTION</th>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-[11px] font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider border-b border-[var(--color-outline)]">
+                    <th className="px-6 py-4">Case Details</th>
+                    <th className="px-6 py-4">Target Entity</th>
+                    <th className="px-6 py-4">Network</th>
+                    <th className="px-6 py-4">Risk Score</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1F2637]/50 text-slate-300 font-mono">
-                  {filteredCases.map((c) => (
-                    <tr
-                      key={c.case_id}
-                      onClick={() => navigate(`/cases/${c.case_id}`)}
-                      className="hover:bg-[#161B26] cursor-pointer transition-colors"
-                    >
-                      <td className="p-3 font-bold text-blue-400">{c.case_number}</td>
-                      <td className="p-3">
-                        <div className="font-sans font-medium text-slate-100">{c.title}</div>
-                        <div className="text-[10px] text-amber-400 uppercase tracking-wider">
-                          {c.fraud_type.replace('_', ' ')}
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <AddressDisplay address={c.reported_wallet_address} />
-                      </td>
-                      <td className="p-3 text-emerald-400 font-bold">
-                        {c.reported_amount ? `${Number(c.reported_amount).toLocaleString()} ${c.reported_asset || 'ETH'}` : '—'}
-                      </td>
-                      <td className="p-3 uppercase text-slate-400">{c.blockchain}</td>
-                      <td className="p-3">
-                        <StatusBadge status={c.status} />
-                      </td>
-                      <td className="p-3 text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/cases/${c.case_id}`);
-                          }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/40 rounded text-[11px] font-semibold transition-colors cursor-pointer"
-                        >
-                          <span>Workspace</span>
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </button>
+                <tbody className="divide-y divide-[var(--color-outline)]">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center">
+                        <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                        <span className="text-sm text-[var(--color-on-surface-variant)]">Loading cases...</span>
                       </td>
                     </tr>
-                  ))}
+                  ) : filteredCases.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center">
+                        <ShieldAlert className="w-8 h-8 text-[var(--color-outline)] mx-auto mb-3" />
+                        <span className="text-sm font-medium text-[var(--color-on-surface)] block">No cases found</span>
+                        <span className="text-sm text-[var(--color-on-surface-variant)]">Try adjusting your filters or search query.</span>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCases.map((c) => {
+                      const riskScore = getRiskScore(c.case_id);
+                      const fraudTypeLabel = c.fraud_type.replace(/_/g, ' ');
+                      
+                      return (
+                        <tr 
+                          key={c.case_id}
+                          onClick={() => navigate(`/cases/${c.case_id}`)}
+                          className="hover:bg-[var(--color-surface-container-high)] cursor-pointer transition-colors group"
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="text-[13px] font-semibold text-[var(--color-on-surface)]">{c.case_number}</span>
+                              <span className="text-[11px] text-[var(--color-on-surface-variant)] mt-1">{new Date(c.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="text-[13px] font-semibold text-[var(--color-on-surface)] truncate max-w-[200px]">{c.title}</span>
+                              <span className="text-[11px] text-[var(--color-on-surface-variant)] font-bold mt-1 truncate max-w-[200px]">{c.reported_wallet_address}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              {c.blockchain === 'ethereum' && <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
+                              {c.blockchain === 'bitcoin' && <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />}
+                              {c.blockchain !== 'ethereum' && c.blockchain !== 'bitcoin' && <div className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+                              <span className="text-[13px] font-medium text-[var(--color-on-surface)]">
+                                {c.blockchain === 'ethereum' ? 'Ethereum' : c.blockchain === 'bitcoin' ? 'Bitcoin' : 'Tron'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              {riskScore !== null ? (
+                                <span className={`inline-flex items-center justify-center w-7 h-7 rounded text-[11px] font-bold ${
+                                  riskScore >= 70 ? 'bg-[var(--color-error)]/10 text-[var(--color-error)]' : 
+                                  riskScore >= 40 ? 'bg-[var(--color-tertiary)]/10 text-[var(--color-tertiary)]' : 
+                                  'bg-[var(--color-secondary)]/10 text-[var(--color-secondary)]'
+                                }`}>
+                                  {riskScore}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center justify-center w-7 h-7 rounded text-[11px] font-bold bg-[var(--color-surface-dim)] text-[var(--color-on-surface-variant)] border border-[var(--color-outline)]">
+                                  —
+                                </span>
+                              )}
+                              <span className="text-[12px] text-[var(--color-on-surface-variant)] truncate max-w-[120px] hidden lg:block capitalize">
+                                {fraudTypeLabel}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-bold tracking-wide uppercase ${
+                              c.status === 'active' ? 'text-[var(--color-secondary)] bg-[var(--color-secondary)]/10' : 
+                              c.status === 'under_investigation' ? 'text-[var(--color-tertiary)] bg-[var(--color-tertiary)]/10' : 
+                              'text-gray-400 bg-gray-500/10'
+                            }`}>
+                              {c.status === 'active' ? 'Active' : c.status === 'under_investigation' ? 'Investigating' : 'Closed'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button className="inline-flex items-center justify-center p-2 text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-primary)] rounded-lg transition-colors">
+                              <ArrowUpRight className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
-          )}
+            
+            {/* Pagination / Footer */}
+            {!isLoading && filteredCases.length > 0 && (
+              <div className="px-6 py-3 border-t border-[var(--color-outline)] bg-[var(--color-surface-dim)] flex items-center justify-between">
+                <span className="text-[12px] text-[var(--color-on-surface-variant)]">
+                  Showing <span className="font-semibold text-[var(--color-on-surface)]">{filteredCases.length}</span> active cases
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </main>
-
-      <NewCaseModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={async (payload) => {
-          await createMutation.mutateAsync(payload);
-        }}
-      />
     </div>
   );
 };

@@ -18,6 +18,7 @@ from app.services.auth.deps import (
     get_current_principal,
     require_case_ownership,
 )
+from app.services.case_service import CaseService
 from app.services.graph.model import CanonicalGraph
 from app.services.risk.engine import RiskEngine
 from app.services.tracing.service import TraceService
@@ -100,25 +101,25 @@ def _build_explanation_response(record: RiskScoreRecord) -> RiskExplanationRespo
 
 @router.get("/{case_id}/wallets/{wallet_address}/risk", response_model=RiskScoreResponse)
 async def get_wallet_risk(
-    case_id: UUID,
+    case_id: str,
     wallet_address: str,
     trace_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
     principal: Principal = Depends(get_current_principal),
 ):
-    case = await db.execute(select(Case).where(Case.case_id == case_id))
-    case_obj = case.scalar_one_or_none()
+    case_obj = await CaseService.get_case(db, case_id)
     if not case_obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
-    require_case_ownership(case_obj, principal, case_id)
+    require_case_ownership(case_obj, principal, case_obj.case_id)
+    actual_id = case_obj.case_id
 
     trace: Optional[TraceRun] = None
     if trace_id:
         trace_result = await db.execute(
-            select(TraceRun).where(TraceRun.case_id == case_id, TraceRun.trace_id == trace_id)
+            select(TraceRun).where(TraceRun.case_id == actual_id, TraceRun.trace_id == trace_id)
         )
         trace = trace_result.scalar_one_or_none()
         if not trace:
@@ -129,7 +130,7 @@ async def get_wallet_risk(
     else:
         traces_result = await db.execute(
             select(TraceRun)
-            .where(TraceRun.case_id == case_id)
+            .where(TraceRun.case_id == actual_id)
             .order_by(TraceRun.created_at.desc())
             .limit(1)
         )
@@ -142,7 +143,7 @@ async def get_wallet_risk(
 
     risk_result = await db.execute(
         select(RiskScoreRecord).where(
-            RiskScoreRecord.case_id == case_id,
+            RiskScoreRecord.case_id == actual_id,
             RiskScoreRecord.trace_id == trace.trace_id,
             RiskScoreRecord.wallet_address == wallet_address.lower(),
         )
@@ -161,12 +162,15 @@ async def get_wallet_risk(
             )
 
         graph = CanonicalGraph.model_validate(graph_record.graph_data)
-        risk_score = await risk_engine.calculate_risk(case_id, trace.trace_id, graph, wallet_address)
-        return _build_risk_response(
-            await db.execute(
-                select(RiskScoreRecord).where(RiskScoreRecord.risk_score_id == risk_score.risk_score_id)
-            )
-        ).scalar_one()
+        risk_score = await risk_engine.calculate_risk(
+            actual_id, trace.trace_id, graph, wallet_address.lower()
+        )
+        await db.commit()
+        record_res = await db.execute(
+            select(RiskScoreRecord).where(RiskScoreRecord.risk_score_id == UUID(str(risk_score.risk_score_id)))
+        )
+        saved_record = record_res.scalar_one()
+        return _build_risk_response(saved_record)
 
     return _build_risk_response(risk_record)
 
@@ -200,24 +204,24 @@ async def get_risk_explanation(
 
 @router.get("/{case_id}/risk-summary", response_model=RiskSummaryResponse)
 async def get_case_risk_summary(
-    case_id: UUID,
+    case_id: str,
     trace_id: Optional[UUID] = None,
     db: AsyncSession = Depends(get_db),
     principal: Principal = Depends(get_current_principal),
 ):
-    case = await db.execute(select(Case).where(Case.case_id == case_id))
-    case_obj = case.scalar_one_or_none()
+    case_obj = await CaseService.get_case(db, case_id)
     if not case_obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": {"code": "CASE_NOT_FOUND", "message": f"Case {case_id} not found"}},
         )
-    require_case_ownership(case_obj, principal, case_id)
+    require_case_ownership(case_obj, principal, case_obj.case_id)
+    actual_id = case_obj.case_id
 
     trace: Optional[TraceRun] = None
     if trace_id:
         trace_result = await db.execute(
-            select(TraceRun).where(TraceRun.case_id == case_id, TraceRun.trace_id == trace_id)
+            select(TraceRun).where(TraceRun.case_id == actual_id, TraceRun.trace_id == trace_id)
         )
         trace = trace_result.scalar_one_or_none()
         if not trace:
@@ -228,7 +232,7 @@ async def get_case_risk_summary(
     else:
         traces_result = await db.execute(
             select(TraceRun)
-            .where(TraceRun.case_id == case_id)
+            .where(TraceRun.case_id == actual_id)
             .order_by(TraceRun.created_at.desc())
             .limit(1)
         )
@@ -239,50 +243,56 @@ async def get_case_risk_summary(
                 detail={"error": {"code": "NO_TRACE", "message": f"No trace found for case {case_id}"}},
             )
 
+    graph_row = await db.execute(select(GraphRecord).where(GraphRecord.trace_id == trace.trace_id))
+    graph_record = graph_row.scalar_one_or_none()
+
+    if not graph_record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": {"code": "GRAPH_NOT_FOUND", "message": f"Graph not found for trace {trace.trace_id}"}},
+        )
+
+    graph = CanonicalGraph.model_validate(graph_record.graph_data)
+    graph_wallet_addresses = {node.id.lower() for node in graph.nodes if node.type == "wallet"}
+
     risk_result = await db.execute(
         select(RiskScoreRecord).where(
-            RiskScoreRecord.case_id == case_id,
+            RiskScoreRecord.case_id == actual_id,
             RiskScoreRecord.trace_id == trace.trace_id,
         )
     )
     risk_records = risk_result.scalars().all()
+    existing_wallets = {r.wallet_address.lower() for r in risk_records}
 
-    if not risk_records:
+    missing_wallets = graph_wallet_addresses - existing_wallets
+    if missing_wallets:
         risk_engine = RiskEngine(db)
-        graph_row = await db.execute(select(GraphRecord).where(GraphRecord.trace_id == trace.trace_id))
-        graph_record = graph_row.scalar_one_or_none()
-
-        if not graph_record:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"error": {"code": "GRAPH_NOT_FOUND", "message": f"Graph not found for trace {trace.trace_id}"}},
-            )
-
-        graph = CanonicalGraph.model_validate(graph_record.graph_data)
-        await risk_engine.calculate_all_wallets(case_id, trace.trace_id, graph)
+        for wallet in missing_wallets:
+            await risk_engine.calculate_risk(actual_id, trace.trace_id, graph, wallet)
+        await db.commit()
 
         risk_result = await db.execute(
             select(RiskScoreRecord).where(
-                RiskScoreRecord.case_id == case_id,
+                RiskScoreRecord.case_id == actual_id,
                 RiskScoreRecord.trace_id == trace.trace_id,
             )
         )
         risk_records = risk_result.scalars().all()
 
     risk_distribution = {"low": 0, "medium": 0, "high": 0, "critical": 0}
-    highest_risk_score = 0
+    highest_risk_score = -1
     highest_risk_wallet = None
     total_score = 0
 
     for r in risk_records:
         risk_distribution[r.risk_category] += 1
         total_score += r.score
-        if r.score > highest_risk_score:
+        if r.score >= highest_risk_score:
             highest_risk_score = r.score
             highest_risk_wallet = r.wallet_address
 
     return RiskSummaryResponse(
-        case_id=case_id,
+        case_id=actual_id,
         trace_id=trace.trace_id,
         wallet_count=len(risk_records),
         risk_distribution=risk_distribution,

@@ -81,6 +81,85 @@ class AlchemyProvider(EthereumProvider):
             return message.replace(self._api_key, "***")
         return message
 
+    async def _post_rpc(self, payload: Dict[str, Any]) -> Any:
+        """POST a JSON-RPC payload to the configured Alchemy endpoint and return `result`.
+
+        Shared by the asset-transfer path and the read-only ``rpc`` helpers so that
+        transport, rate-limit and error handling stay identical for every call.
+        """
+        try:
+            response = await self._client.post(self._endpoint, json=payload)
+        except httpx.TimeoutException as exc:
+            raise ProviderUnavailableError(
+                self._sanitize(f"Alchemy request timed out: {exc}"),
+                provider=self.name,
+            ) from None
+        except httpx.HTTPError as exc:
+            raise ProviderUnavailableError(
+                self._sanitize(f"Alchemy connection failed: {exc}"),
+                provider=self.name,
+            ) from None
+
+        if response.status_code == 429:
+            raise RateLimitError("Alchemy rate limit exceeded (HTTP 429)", provider=self.name)
+        if response.status_code >= 500:
+            raise ProviderUnavailableError(
+                self._sanitize(
+                    f"Alchemy server error (HTTP {response.status_code}): {response.text[:500]}"
+                ),
+                provider=self.name,
+            )
+        if response.status_code >= 400:
+            raise ProviderResponseError(
+                self._sanitize(f"Alchemy request failed (HTTP {response.status_code}): {response.text[:500]}"),
+                provider=self.name,
+            )
+
+        try:
+            body = response.json()
+        except json.JSONDecodeError:
+            raise ProviderResponseError("Alchemy returned invalid JSON", provider=self.name) from None
+
+        if not isinstance(body, dict):
+            raise ProviderResponseError("Alchemy returned unexpected JSON shape", provider=self.name)
+
+        if "error" in body and body["error"] is not None:
+            error = body["error"]
+            error_text = json.dumps(error) if not isinstance(error, str) else error
+            error_text = self._sanitize(error_text)
+            lowered = error_text.lower()
+            if "rate limit" in lowered or "too many" in lowered:
+                raise RateLimitError(error_text, provider=self.name)
+            raise ProviderResponseError(error_text, provider=self.name)
+
+        return body.get("result")
+
+    async def rpc(self, method: str, params: Optional[Sequence[Any]] = None) -> Any:
+        """Issue a read-only JSON-RPC method against the configured endpoint."""
+        payload: Dict[str, Any] = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": method,
+            "params": list(params) if params else [],
+        }
+        return await self._post_rpc(payload)
+
+    async def chain_id(self) -> int:
+        value = _hex_to_int(await self.rpc("eth_chainId"))
+        if value is None:
+            raise ProviderResponseError(
+                "Alchemy returned an invalid eth_chainId", provider=self.name
+            )
+        return value
+
+    async def block_number(self) -> int:
+        value = _hex_to_int(await self.rpc("eth_blockNumber"))
+        if value is None:
+            raise ProviderResponseError(
+                "Alchemy returned an invalid eth_blockNumber", provider=self.name
+            )
+        return value
+
     async def get_asset_transfers(
         self,
         *,
@@ -131,52 +210,7 @@ class AlchemyProvider(EthereumProvider):
             "params": [params],
         }
 
-        try:
-            response = await self._client.post(self._endpoint, json=payload)
-        except httpx.TimeoutException as exc:
-            raise ProviderUnavailableError(
-                self._sanitize(f"Alchemy request timed out: {exc}"),
-                provider=self.name,
-            ) from None
-        except httpx.HTTPError as exc:
-            raise ProviderUnavailableError(
-                self._sanitize(f"Alchemy connection failed: {exc}"),
-                provider=self.name,
-            ) from None
-
-        if response.status_code == 429:
-            raise RateLimitError("Alchemy rate limit exceeded (HTTP 429)", provider=self.name)
-        if response.status_code >= 500:
-            raise ProviderUnavailableError(
-                self._sanitize(
-                    f"Alchemy server error (HTTP {response.status_code}): {response.text[:500]}"
-                ),
-                provider=self.name,
-            )
-        if response.status_code >= 400:
-            raise ProviderResponseError(
-                self._sanitize(f"Alchemy request failed (HTTP {response.status_code}): {response.text[:500]}"),
-                provider=self.name,
-            )
-
-        try:
-            body = response.json()
-        except json.JSONDecodeError:
-            raise ProviderResponseError("Alchemy returned invalid JSON", provider=self.name) from None
-
-        if not isinstance(body, dict):
-            raise ProviderResponseError("Alchemy returned unexpected JSON shape", provider=self.name)
-
-        if "error" in body and body["error"] is not None:
-            error = body["error"]
-            error_text = json.dumps(error) if not isinstance(error, str) else error
-            error_text = self._sanitize(error_text)
-            lowered = error_text.lower()
-            if "rate limit" in lowered or "too many" in lowered:
-                raise RateLimitError(error_text, provider=self.name)
-            raise ProviderResponseError(error_text, provider=self.name)
-
-        result = body.get("result")
+        result = await self._post_rpc(payload)
         if not isinstance(result, dict):
             raise ProviderResponseError("Alchemy result missing or invalid", provider=self.name)
 

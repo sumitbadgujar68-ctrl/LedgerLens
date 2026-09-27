@@ -15,7 +15,7 @@ router = APIRouter(prefix="/cases", tags=["cases"])
 
 MOCK_INVESTIGATOR_ID = UUID("00000000-0000-0000-0000-000000000001")
 
-def _case_not_found(case_id: UUID) -> HTTPException:
+def _case_not_found(case_id: str) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail={
@@ -43,8 +43,8 @@ async def get_case(
 ):
     case = await CaseService.get_case(db, case_id)
     if not case:
-        raise _case_not_found(case_id)
-    require_case_ownership(case, principal, case_id)
+        raise _case_not_found(str(case_id))
+    require_case_ownership(case, principal, case.case_id)
     return case
 
 @router.put("/{case_id}", response_model=CaseResponse)
@@ -56,14 +56,14 @@ async def update_case(
 ):
     case = await CaseService.get_case(db, case_id)
     if not case:
-        raise _case_not_found(case_id)
-    require_case_ownership(case, principal, case_id)
-    return await CaseService.update_case(db, case_id, case_update)
+        raise _case_not_found(str(case_id))
+    require_case_ownership(case, principal, case.case_id)
+    return await CaseService.update_case(db, case.case_id, case_update)
 
 @router.get("", response_model=List[CaseResponse])
 async def list_cases(
     skip: int = 0,
-    limit: int = 20,
+    limit: int = 100,
     db: AsyncSession = Depends(get_db),
     principal: Principal = Depends(get_current_principal),
 ):

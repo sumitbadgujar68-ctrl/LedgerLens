@@ -46,6 +46,7 @@ class AttributionEngine:
             trace_id=trace_id,
             wallet_address=wallet_address,
             candidate_entity_id=entity_address.entity_id,
+            candidate_entity=entity,
             provenance_level="DIRECT",  # Exact registry match is considered DIRECT
             confidence=entity_address.confidence,
             attribution_method="registry_exact_match",

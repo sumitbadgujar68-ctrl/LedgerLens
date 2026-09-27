@@ -25,6 +25,8 @@ export interface Case {
   status: CaseStatus;
   investigator_id: string;
   investigator_notes?: string | null;
+  demo_data: boolean;
+  data_source?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -149,4 +151,153 @@ export interface TraceResponse {
   provider?: string | null;
   created_at?: string | null;
   completed_at?: string | null;
+}
+
+export interface Citation {
+  type: string;
+  reference_id: string;
+  summary: string;
+  detail?: string | null;
+  confidence: number;
+}
+
+export interface CopilotResponse {
+  answer: string;
+  citations: Citation[];
+  confidence: number;
+  type: string;
+}
+
+export interface CopilotExplainRiskPayload {
+  wallet_address: string;
+  trace_id?: string;
+}
+
+export interface RiskFactorEvidence {
+  transaction_hashes: string[];
+  pattern_ids: string[];
+  attribution_ids: string[];
+  entity_ids: string[];
+  wallet_addresses: string[];
+  additional_data: Record<string, unknown>;
+}
+
+export interface RiskFactor {
+  factor_type: string;
+  weight: number;
+  evidence: RiskFactorEvidence;
+  description: string;
+  confidence: number;
+}
+
+export interface RiskScoreResponse {
+  risk_score_id: string;
+  case_id: string;
+  trace_id: string;
+  wallet_address: string;
+  score: number;
+  risk_category: string;
+  scoring_version: string;
+  factors: RiskFactor[];
+  calculated_at: string;
+}
+
+export interface RiskExplanationResponse {
+  risk_score_id: string;
+  wallet_address: string;
+  total_score: number;
+  risk_category: string;
+  scoring_version: string;
+  factor_explanations: string[];
+  summary: string;
+  calculated_at: string;
+}
+
+export interface RiskSummaryResponse {
+  case_id: string;
+  trace_id: string;
+  wallet_count: number;
+  risk_distribution: Record<string, number>;
+  highest_risk_wallet?: string | null;
+  highest_risk_score?: number | null;
+  average_score?: number | null;
+}
+
+export type ReportType = 'summary' | 'detailed' | 'evidence_export';
+export type ReportFormat = 'pdf' | 'json' | 'html';
+
+export interface ReportGeneratePayload {
+  report_type: ReportType;
+  format: ReportFormat;
+}
+
+export interface ReportJobResponse {
+  job_id: string;
+  status: string;
+  message?: string;
+}
+
+export interface GeneratedReport {
+  report_id: string;
+  report_type: ReportType;
+  format: ReportFormat;
+  generated_at: string;
+  file_url: string;
+}
+
+export interface ReportListResponse {
+  reports: GeneratedReport[];
+}
+
+export interface PatternItem {
+  pattern_id: string;
+  trace_id: string;
+  wallet_address: string;
+  pattern_type: string;
+  demo_label?: string | null;
+  confidence: number;
+  description: string;
+  metrics: Record<string, unknown>;
+  detected_at: string;
+  demo_data: boolean;
+  finding_source: string;
+}
+
+export interface PatternListResponse {
+  patterns: PatternItem[];
+}
+
+export interface EvidenceItem {
+  evidence_id: string;
+  evidence_type: string;
+  reference_id: string | null;
+  investigator_note: string | null;
+  pinned_at: string;
+  demo_data: boolean;
+  finding_source: string;
+}
+
+export interface EvidenceListResponse {
+  evidence: EvidenceItem[];
+}
+
+export interface AttributionItem {
+  attribution_id: string;
+  trace_id: string;
+  wallet_address: string;
+  entity_id: string;
+  entity_name: string;
+  entity_type?: string | null;
+  provenance_level: string;
+  confidence: number;
+  attribution_method: string;
+  source: string;
+  attributed_at: string;
+  demo_data: boolean;
+  finding_source: string;
+  disclaimer?: string | null;
+}
+
+export interface AttributionListResponse {
+  attributions: AttributionItem[];
 }

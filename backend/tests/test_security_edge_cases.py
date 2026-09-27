@@ -548,7 +548,8 @@ def _protected_routes():
 async def test_every_protected_route_rejects_missing_token():
     routes = _protected_routes()
     # The sweep is only meaningful if it really covers the registered surface.
-    assert len(routes) == 18, routes
+    # 22 = 18 Phase 1-6 routes + 3 MVP findings routes + 1 Phase 7 auth logout route.
+    assert len(routes) == 22, routes
 
     app.dependency_overrides.pop(get_current_principal, None)
     try:
