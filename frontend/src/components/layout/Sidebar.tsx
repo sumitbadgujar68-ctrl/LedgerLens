@@ -112,7 +112,7 @@ export const Sidebar: React.FC = () => {
           onClick={() => setNewCaseModalOpen(true)}
           className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] rounded-lg font-[Inter] text-[16px] font-semibold hover:brightness-110 active:scale-95 transition-all duration-150 shadow-sm cursor-pointer">
           <PlusCircle className="w-[18px] h-[18px]" />
-          <span>New Investigation</span>
+          <span>{language === 'HI' ? 'नई जांच' : 'New Investigation'}</span>
         </button>
         
         {/* Navigation Sections */}
@@ -154,16 +154,16 @@ export const Sidebar: React.FC = () => {
           <div className="flex items-center justify-between font-[JetBrains_Mono] text-[10px] font-semibold tracking-[0.08em]">
             <span className="flex items-center gap-1.5 text-[var(--color-on-surface)]">
               <span className="w-2 h-2 rounded-full bg-[var(--color-tertiary)]"></span>
-              RPC NODE HEALTH
+              {language === 'HI' ? 'आरपीसी नोड स्वास्थ्य' : 'RPC NODE HEALTH'}
             </span>
             <span className="text-[var(--color-tertiary)] font-[JetBrains_Mono] font-normal">99.98%</span>
           </div>
           <div className="flex items-center justify-between font-[JetBrains_Mono] text-[11px] text-[var(--color-on-surface-variant)]">
-            <span>PEERS: 64</span>
-            <span>LAT: 12ms</span>
+            <span>{language === 'HI' ? 'पीयर्स: 64' : 'PEERS: 64'}</span>
+            <span>{language === 'HI' ? 'लेटेंसी: 12ms' : 'LAT: 12ms'}</span>
           </div>
           <div className="font-[JetBrains_Mono] text-[10px] text-[var(--color-on-surface-variant)]/80 truncate">
-            BLOCK: #19,842,912
+            {language === 'HI' ? 'ब्लॉक' : 'BLOCK'}: #19,842,912
           </div>
         </div>
         
@@ -174,18 +174,18 @@ export const Sidebar: React.FC = () => {
             className="flex items-center gap-2.5 px-2.5 py-1.5 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-high)] rounded text-[12px] font-[Inter] transition-colors cursor-pointer"
           >
             <Server className="w-[16px] h-[16px]" />
-            <span>RPC Node Health</span>
+            <span>{language === 'HI' ? 'आरपीसी नोड स्वास्थ्य' : 'RPC Node Health'}</span>
           </Link>
           <Link
             to="/settings"
             className="flex items-center gap-2.5 px-2.5 py-1.5 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container-high)] rounded text-[12px] font-[Inter] transition-colors cursor-pointer"
           >
             <SettingsIcon className="w-[16px] h-[16px]" />
-            <span>System Settings</span>
+            <span>{language === 'HI' ? 'सिस्टम सेटिंग्स' : 'System Settings'}</span>
           </Link>
           <button onClick={handleSignOut} className="flex items-center gap-2.5 px-2.5 py-1.5 text-[var(--color-on-surface-variant)] hover:text-[var(--color-error)] hover:bg-[var(--color-error)]/10 rounded text-[12px] font-[Inter] transition-colors cursor-pointer">
             <LogOut className="w-[16px] h-[16px]" />
-            <span>Sign Out</span>
+            <span>{language === 'HI' ? 'साइन आउट' : 'Sign Out'}</span>
           </button>
         </div>
       </div>

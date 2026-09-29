@@ -230,6 +230,63 @@ async def run_bounded_trace(
             expanded += 1
 
     transactions = sorted(collected.values(), key=_sort_key)
+    
+    node_meta = {}
+    for tx in transactions:
+        for addr in (tx.from_address, tx.to_address):
+            if not addr:
+                continue
+            addr_l = addr.lower()
+            if addr_l not in node_meta:
+                node_meta[addr_l] = {
+                    "first_seen": None,
+                    "last_seen": None,
+                    "first_seen_block": None,
+                    "last_seen_block": None,
+                    "total_outflow": Decimal("0"),
+                    "transaction_count": 0,
+                    "asset": tx.asset
+                }
+            meta = node_meta[addr_l]
+            # avoid double counting if from_address == to_address
+            if addr == tx.from_address:  
+                meta["transaction_count"] += 1
+            elif addr == tx.to_address and tx.from_address != tx.to_address:
+                meta["transaction_count"] += 1
+
+            if addr_l == (tx.from_address or "").lower():
+                meta["total_outflow"] += tx.amount
+                
+            if tx.block_timestamp:
+                if meta["first_seen"] is None or tx.block_timestamp < meta["first_seen"]:
+                    meta["first_seen"] = tx.block_timestamp
+                if meta["last_seen"] is None or tx.block_timestamp > meta["last_seen"]:
+                    meta["last_seen"] = tx.block_timestamp
+                    
+            if tx.block_number:
+                if meta["first_seen_block"] is None or tx.block_number < meta["first_seen_block"]:
+                    meta["first_seen_block"] = tx.block_number
+                if meta["last_seen_block"] is None or tx.block_number > meta["last_seen_block"]:
+                    meta["last_seen_block"] = tx.block_number
+                    
+    for node in graph.nodes:
+        if node.id in node_meta:
+            m = node_meta[node.id]
+            node.metadata.update({
+                "transaction_count": m["transaction_count"],
+                "total_outflow": str(m["total_outflow"]),
+            })
+            if m["asset"]:
+                node.metadata["asset"] = m["asset"]
+            if m["first_seen"]:
+                node.metadata["first_seen"] = m["first_seen"].isoformat()
+            if m["last_seen"]:
+                node.metadata["last_seen"] = m["last_seen"].isoformat()
+            if m["first_seen_block"]:
+                node.metadata["first_seen_block"] = m["first_seen_block"]
+            if m["last_seen_block"]:
+                node.metadata["last_seen_block"] = m["last_seen_block"]
+
     graph.finalize()
 
     other_errors = [

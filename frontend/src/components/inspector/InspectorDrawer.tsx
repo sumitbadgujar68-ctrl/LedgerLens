@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useInvestigationStore } from '../../store/investigationStore';
 import {
   X,
@@ -50,6 +51,7 @@ function formatTimestamp(ts: string | null | undefined): string {
 }
 
 export const InspectorDrawer: React.FC = () => {
+  const navigate = useNavigate();
   const {
     isInspectorOpen,
     inspectorMode,
@@ -229,36 +231,24 @@ export const InspectorDrawer: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => setIsCopilotSummaryOpen((v) => !v)}
+                onClick={() => {
+                  if (currentCase) {
+                    navigate(`/cases/${currentCase.case_id}/copilot`);
+                  }
+                }}
                 className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--color-primary)] hover:brightness-110 text-[var(--color-on-primary)] text-xs font-bold transition-all cursor-pointer shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_20px_rgba(255,107,0,0.5)]"
               >
                 <Bot className="w-4 h-4" />
                 <span>Ask AI Copilot</span>
               </button>
 
-              {isCopilotSummaryOpen && (
-                <div className="p-4 rounded-2xl bg-[var(--color-surface-container-low)] border border-[var(--color-primary)]/50 space-y-2 text-xs text-[var(--color-on-surface)] font-medium shadow-[0_0_15px_rgba(255,107,0,0.1)] relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-primary)]/5 to-[var(--color-tertiary)]/5 pointer-events-none" />
-                  <div className="flex items-center justify-between text-[var(--color-primary)] font-bold relative z-10 font-[JetBrains_Mono]">
-                    <span>AI Risk Synthesis</span>
-                    <ProvenanceBadge variant="ai" size="sm" />
-                  </div>
-                  <p className="leading-relaxed relative z-10">
-                    {selectedNode.hop === 0
-                      ? `Primary subject seed wallet under active investigation (${currentCase?.case_number || 'Docket'}). Classified typology: ${currentCase?.fraud_type?.replace(/_/g, ' ') || 'Unclassified'}. Root of fund flow graph.`
-                      : getMetadataValue<string[]>(metadata, 'tags', []).includes('mixer')
-                      ? `Privacy protocol / mixing pool detected (${selectedNode.label || selectedNode.id.substring(0, 10)}...). Elevated obfuscation signature.`
-                      : getMetadataValue<string[]>(metadata, 'tags', []).includes('cex')
-                      ? `Centralized exchange depository address (${selectedNode.label || selectedNode.id.substring(0, 10)}...). Potential KYC identification point for subpoena request.`
-                      : `Downstream Hop ${selectedNode.hop} counterparty address identified in multi-hop fund dispersion path on ${currentCase?.blockchain?.toUpperCase() || 'ETHEREUM'}.`}
-                  </p>
-                </div>
-              )}
-
               {/* Collapsible Evidence Note Form */}
               {showNoteForm && (
                 <form
-                  onSubmit={handleAddNote}
+                  onSubmit={(e) => {
+                    handleAddNote(e);
+                    alert('Evidence saved successfully! Check the Evidence Vault.');
+                  }}
                   className="p-4 bg-[var(--color-surface-container-low)] rounded-2xl border border-[var(--color-outline)] space-y-3"
                 >
                   <div className="text-xs text-[var(--color-on-surface)] font-bold">New Note</div>

@@ -14,7 +14,7 @@ import {
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
-  const { setNewCaseModalOpen, globalSearchQuery } = useInvestigationStore();
+  const { setNewCaseModalOpen, globalSearchQuery, language } = useInvestigationStore();
   const [statusFilter] = useState('all');
   const [chainFilter, setChainFilter] = useState('all');
   const [riskFilter, setRiskFilter] = useState('all');
@@ -102,24 +102,28 @@ export const Dashboard: React.FC = () => {
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[var(--color-outline)] pb-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-wide text-[var(--color-on-surface)]">Investigations</h1>
-              <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">Manage and track ongoing blockchain forensics cases.</p>
+              <h1 className="text-2xl font-bold tracking-wide text-[var(--color-on-surface)]">
+                {language === 'HI' ? 'जांच' : 'Investigations'}
+              </h1>
+              <p className="text-sm text-[var(--color-on-surface-variant)] mt-1">
+                {language === 'HI' ? 'चल रही ब्लॉकचेन फोरेंसिक केसों का प्रबंधन और ट्रैक करें।' : 'Manage and track ongoing blockchain forensics cases.'}
+              </p>
             </div>
             <button
               onClick={() => setNewCaseModalOpen(true)}
               className="inline-flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)] hover:brightness-110 rounded-xl text-[13px] font-bold text-[var(--color-on-surface)] shadow-sm transition-colors"
             >
-              + New Case
+              + {language === 'HI' ? 'नया केस' : 'New Case'}
             </button>
           </div>
 
           {/* Metric Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Cases', value: cases.length.toString(), trend: '', color: 'text-[var(--color-secondary)]' },
-              { label: 'Active Investigations', value: cases.filter(c => c.status === 'active' || c.status === 'under_investigation').length.toString(), trend: '', color: 'text-[var(--color-secondary)]' },
-              { label: 'Critical Risk', value: cases.filter(c => (getRiskScore(c.case_id) ?? 0) >= 70).length.toString(), trend: '', color: 'text-[var(--color-error)]' },
-              { label: 'Avg Resolution', value: 'N/A', trend: '', color: 'text-[var(--color-on-surface-variant)]' },
+              { label: language === 'HI' ? 'कुल केस' : 'Total Cases', value: cases.length.toString(), trend: '', color: 'text-[var(--color-secondary)]' },
+              { label: language === 'HI' ? 'सक्रिय जांच' : 'Active Investigations', value: cases.filter(c => c.status === 'active' || c.status === 'under_investigation').length.toString(), trend: '', color: 'text-[var(--color-secondary)]' },
+              { label: language === 'HI' ? 'गंभीर जोखिम' : 'Critical Risk', value: cases.filter(c => (getRiskScore(c.case_id) ?? 0) >= 70).length.toString(), trend: '', color: 'text-[var(--color-error)]' },
+              { label: language === 'HI' ? 'औसत समाधान' : 'Avg Resolution', value: 'N/A', trend: '', color: 'text-[var(--color-on-surface-variant)]' },
             ].map((metric) => (
               <div key={metric.label} className="bg-[var(--color-surface-container-low)] rounded-xl p-5 border border-[var(--color-outline)]/50 flex flex-col justify-between h-32 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -139,14 +143,14 @@ export const Dashboard: React.FC = () => {
             <div className="flex flex-col lg:flex-row justify-between gap-4">
               <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar">
                 <div className="flex items-center gap-1 bg-[var(--color-surface-dim)] p-1 rounded-lg border border-[var(--color-outline)]">
-                  <button onClick={() => setChainFilter('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${chainFilter === 'all' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>All Chains</button>
+                  <button onClick={() => setChainFilter('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${chainFilter === 'all' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>{language === 'HI' ? 'सभी चेन' : 'All Chains'}</button>
                   <button onClick={() => setChainFilter('ethereum')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${chainFilter === 'ethereum' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>Ethereum</button>
                 </div>
 
                 <div className="flex items-center gap-1 bg-[var(--color-surface-dim)] p-1 rounded-lg border border-[var(--color-outline)]">
-                  <button onClick={() => setRiskFilter('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'all' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>All Risks</button>
-                  <button onClick={() => setRiskFilter('high')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'high' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-error)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>High Risk</button>
-                  <button onClick={() => setRiskFilter('medium')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'medium' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-tertiary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>Medium Risk</button>
+                  <button onClick={() => setRiskFilter('all')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'all' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-primary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>{language === 'HI' ? 'सभी जोखिम' : 'All Risks'}</button>
+                  <button onClick={() => setRiskFilter('high')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'high' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-error)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>{language === 'HI' ? 'उच्च जोखिम' : 'High Risk'}</button>
+                  <button onClick={() => setRiskFilter('medium')} className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors whitespace-nowrap ${riskFilter === 'medium' ? 'bg-[var(--color-surface-container-high)] text-[var(--color-tertiary)]' : 'text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]'}`}>{language === 'HI' ? 'मध्यम जोखिम' : 'Medium Risk'}</button>
                 </div>
               </div>
 
@@ -169,12 +173,12 @@ export const Dashboard: React.FC = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="text-[11px] font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider border-b border-[var(--color-outline)]">
-                    <th className="px-6 py-4">Case Details</th>
-                    <th className="px-6 py-4">Target Entity</th>
-                    <th className="px-6 py-4">Network</th>
-                    <th className="px-6 py-4">Risk Score</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-6 py-4">{language === 'HI' ? 'केस विवरण' : 'Case Details'}</th>
+                    <th className="px-6 py-4">{language === 'HI' ? 'लक्ष्य इकाई' : 'Target Entity'}</th>
+                    <th className="px-6 py-4">{language === 'HI' ? 'नेटवर्क' : 'Network'}</th>
+                    <th className="px-6 py-4">{language === 'HI' ? 'जोखिम स्कोर' : 'Risk Score'}</th>
+                    <th className="px-6 py-4">{language === 'HI' ? 'स्थिति' : 'Status'}</th>
+                    <th className="px-6 py-4 text-right">{language === 'HI' ? 'कार्रवाई' : 'Actions'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--color-outline)]">
@@ -182,15 +186,15 @@ export const Dashboard: React.FC = () => {
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center">
                         <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                        <span className="text-sm text-[var(--color-on-surface-variant)]">Loading cases...</span>
+                        <span className="text-sm text-[var(--color-on-surface-variant)]">{language === 'HI' ? 'केस लोड हो रहे हैं...' : 'Loading cases...'}</span>
                       </td>
                     </tr>
                   ) : filteredCases.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center">
                         <ShieldAlert className="w-8 h-8 text-[var(--color-outline)] mx-auto mb-3" />
-                        <span className="text-sm font-medium text-[var(--color-on-surface)] block">No cases found</span>
-                        <span className="text-sm text-[var(--color-on-surface-variant)]">Try adjusting your filters or search query.</span>
+                        <span className="text-sm font-medium text-[var(--color-on-surface)] block">{language === 'HI' ? 'कोई केस नहीं मिला' : 'No cases found'}</span>
+                        <span className="text-sm text-[var(--color-on-surface-variant)]">{language === 'HI' ? 'अपने फ़िल्टर या खोज क्वेरी को समायोजित करने का प्रयास करें।' : 'Try adjusting your filters or search query.'}</span>
                       </td>
                     </tr>
                   ) : (
@@ -252,7 +256,7 @@ export const Dashboard: React.FC = () => {
                               c.status === 'under_investigation' ? 'text-[var(--color-tertiary)] bg-[var(--color-tertiary)]/10' : 
                               'text-gray-400 bg-gray-500/10'
                             }`}>
-                              {c.status === 'active' ? 'Active' : c.status === 'under_investigation' ? 'Investigating' : 'Closed'}
+                              {c.status === 'active' ? (language === 'HI' ? 'सक्रिय' : 'Active') : c.status === 'under_investigation' ? (language === 'HI' ? 'जांच जारी' : 'Investigating') : (language === 'HI' ? 'बंद' : 'Closed')}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
