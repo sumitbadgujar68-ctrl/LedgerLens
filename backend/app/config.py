@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     openai_temperature: float = 0.1
     openrouter_api_key: Optional[str] = None
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
-    openrouter_model: str = "google/gemma-4-26b-a4b-it:free"
+    openrouter_model: str = "qwen/qwen3.8-27b:free"
     cors_allowed_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"
     enable_docs: bool = False
     sql_echo: bool = False

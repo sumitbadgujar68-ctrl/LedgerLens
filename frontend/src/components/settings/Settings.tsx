@@ -138,7 +138,7 @@ export const Settings: React.FC = () => {
               <div className="p-4 bg-[var(--color-surface-dim)] rounded-xl border border-[var(--color-outline)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors hover:border-[var(--color-primary)]/50">
                 <div>
                   <span className="text-[11px] font-bold text-[var(--color-on-surface-variant)] block uppercase tracking-wider mb-1">AI Inference Engine Gateway</span>
-                  <span className="text-sm font-bold text-purple-400">OpenRouter Inference Gateway (Gemma 27B / Claude 3.5)</span>
+                  <span className="text-sm font-bold text-purple-400">OpenRouter Inference Gateway (Qwen 27B / Claude 3.5)</span>
                   <span className="text-xs text-[var(--color-on-surface-variant)] block mt-1">
                     Latency: 310ms TTFT · Streaming Enabled · Grounded Heuristics Active
                   </span>

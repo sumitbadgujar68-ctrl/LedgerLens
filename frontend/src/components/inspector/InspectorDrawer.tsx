@@ -66,7 +66,6 @@ export const InspectorDrawer: React.FC = () => {
   const [noteContent, setNoteContent] = useState('');
   const [noteTag, setNoteTag] = useState<'lead' | 'custody' | 'subpoena' | 'general'>('lead');
   const [showNoteForm, setShowNoteForm] = useState(false);
-  const [isCopilotSummaryOpen, setIsCopilotSummaryOpen] = useState(false);
 
   if (!isInspectorOpen || !inspectorMode) {
     return null;

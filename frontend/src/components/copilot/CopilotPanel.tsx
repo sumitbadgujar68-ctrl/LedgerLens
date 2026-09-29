@@ -196,7 +196,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
         </div>
         <div className="flex items-center gap-2 text-[10px] text-[var(--color-on-surface-variant)]">
           <span className="px-2 py-0.5 rounded-md bg-[var(--color-surface-container-low)] border border-[var(--color-outline)] text-purple-400 font-bold tracking-wider">
-            GEMMA 27B
+            QWEN 27B
           </span>
           <ProvenanceBadge variant="ai" size="sm" />
         </div>
@@ -319,7 +319,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
                   <Bot className="w-4 h-4 text-purple-400" />
                   <span className="font-bold text-[var(--color-on-surface)] uppercase tracking-wider">Synthesis</span>
                   <span className="text-[var(--color-on-surface-variant)]">·</span>
-                  <span className="text-[10px] font-semibold text-[var(--color-on-surface-variant)] tracking-wider">Gemma 27B</span>
+                  <span className="text-[10px] font-semibold text-[var(--color-on-surface-variant)] tracking-wider">Qwen 27B</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-[var(--color-surface-dim)] border border-[var(--color-outline)] text-[10px]">
@@ -382,7 +382,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
             <span>
               {retryCount > 0
                 ? `Retrying... (${retryCount}/${MAX_RETRIES})`
-                : 'Querying Gemma 27B via inference gateway...'}
+                : 'Querying Qwen 27B via inference gateway...'}
             </span>
             {retryCount > 0 && (
               <RefreshCw className="w-4 h-4 animate-spin text-[var(--color-tertiary)]" />
