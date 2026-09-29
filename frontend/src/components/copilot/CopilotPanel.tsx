@@ -10,6 +10,7 @@ import {
   AlertCircle,
   RefreshCw,
 } from 'lucide-react';
+import { useInvestigationStore } from '../../store/investigationStore';
 
 interface CopilotPanelProps {
   caseId: string;
@@ -65,6 +66,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
   selectedWalletAddress,
   embedded = false,
 }) => {
+  const { language } = useInvestigationStore();
   const [question, setQuestion] = useState('');
   const [thread, setThread] = useState<ThreadEntry[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -150,12 +152,12 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
   };
 
   const suggestedActions = [
-    { label: 'Summarize case', action: () => runAction({ kind: 'summarize' }) },
+    { label: language === 'HI' ? 'केस का सारांश दें' : 'Summarize case', action: () => runAction({ kind: 'summarize' }) },
     {
-      label: 'Explain risk',
+      label: language === 'HI' ? 'जोखिम समझाएं' : 'Explain risk',
       title: selectedWalletAddress
-        ? 'Ask the copilot to explain risk'
-        : 'Select a wallet in the graph first',
+        ? (language === 'HI' ? 'कोपायलट से जोखिम समझाने को कहें' : 'Ask the copilot to explain risk')
+        : (language === 'HI' ? 'पहले ग्राफ़ में कोई वॉलेट चुनें' : 'Select a wallet in the graph first'),
       disabled: !selectedWalletAddress,
       action: () =>
         selectedWalletAddress &&
@@ -165,7 +167,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
         }),
     },
     {
-      label: 'Explain transaction flow',
+      label: language === 'HI' ? 'लेनदेन प्रवाह समझाएं' : 'Explain transaction flow',
       action: () =>
         runAction({
           kind: 'ask',
@@ -173,7 +175,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
         }),
     },
     {
-      label: 'Identify unusual counterparties',
+      label: language === 'HI' ? 'असामान्य प्रतिपक्षों की पहचान करें' : 'Identify unusual counterparties',
       action: () =>
         runAction({
           kind: 'ask',
@@ -189,7 +191,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
         <div className="flex items-center gap-2">
           <Bot className="w-4 h-4 text-purple-400" />
           <span className="text-xs font-bold text-[var(--color-on-surface)] uppercase tracking-wider">
-            AI Copilot
+            {language === 'HI' ? 'एआई कोपायलट' : 'AI Copilot'}
           </span>
         </div>
         <div className="flex items-center gap-2 text-[10px] text-[var(--color-on-surface-variant)]">
@@ -215,7 +217,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
           )}
         </div>
         <span className="text-[10px] text-[var(--color-secondary)] font-bold uppercase tracking-wider">
-          {isExecuting ? 'Executing...' : 'Ready'}
+          {isExecuting ? (language === 'HI' ? 'निष्पादित हो रहा है...' : 'Executing...') : (language === 'HI' ? 'तैयार' : 'Ready')}
         </span>
       </div>
 
@@ -245,11 +247,10 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
             <Cpu className="w-10 h-10 text-purple-400/50" />
             <div>
               <p className="text-sm font-bold text-[var(--color-on-surface)] uppercase tracking-wider">
-                Ask the Case Copilot
+                {language === 'HI' ? 'केस कोपायलट से पूछें' : 'Ask the Case Copilot'}
               </p>
               <p className="text-xs text-[var(--color-on-surface-variant)] max-w-xs mt-2 leading-relaxed font-medium">
-                Queries are grounded in on-chain transaction records, graph topology, and risk indicators.
-                Select a suggested query above or type a specific analytical prompt.
+                {language === 'HI' ? 'प्रश्न ऑन-चेन लेनदेन रिकॉर्ड, ग्राफ़ टोपोलॉजी और जोखिम संकेतकों पर आधारित होते हैं। ऊपर दिया गया कोई सुझाया गया प्रश्न चुनें या कोई विशिष्ट विश्लेषणात्मक प्रांप्ट टाइप करें।' : 'Queries are grounded in on-chain transaction records, graph topology, and risk indicators. Select a suggested query above or type a specific analytical prompt.'}
               </p>
             </div>
           </div>
@@ -399,7 +400,7 @@ export const CopilotPanel: React.FC<CopilotPanelProps> = ({
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask about this case or query fund flow..."
+          placeholder={language === 'HI' ? 'इस मामले के बारे में पूछें या फंड प्रवाह के बारे में प्रश्न करें...' : 'Ask about this case or query fund flow...'}
           disabled={isExecuting}
           className="flex-1 bg-[var(--color-surface-container-low)] border border-[var(--color-outline)] rounded-xl px-4 py-2.5 text-xs text-[var(--color-on-surface)] placeholder-[var(--color-on-surface-variant)] focus:outline-none focus:border-[var(--color-primary)] transition-colors font-[Inter] font-medium"
         />

@@ -46,6 +46,7 @@ export const InvestigationWorkspace: React.FC = () => {
     selectTransaction,
     globalSearchQuery,
     closeInspector,
+    language,
   } = useInvestigationStore();
 
   const initialTab = (view as WorkspaceTab) || 'graph';
@@ -389,39 +390,39 @@ MULTI-HOP GRAPH TRAVERSAL SUMMARY:
       <div className="bg-[var(--color-surface-container)] border-b border-[var(--color-outline)] px-6 flex items-center h-10 select-none shrink-0 overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-1 h-full font-[Inter] text-[12px] uppercase tracking-wide">
           <button onClick={() => handleTabChange('overview')} className={tabClass('overview')}>
-            OVERVIEW
+            {language === 'HI' ? 'अवलोकन' : 'OVERVIEW'}
           </button>
           <button onClick={() => handleTabChange('trace')} className={tabClass('trace')}>
-            TRACE
+            {language === 'HI' ? 'ट्रेस' : 'TRACE'}
           </button>
           <button onClick={() => handleTabChange('graph')} className={tabClass('graph')}>
-            GRAPH
+            {language === 'HI' ? 'ग्राफ़' : 'GRAPH'}
             {currentTrace?.graph?.node_count ? (
-              <span className="font-[JetBrains_Mono] text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-primary)]/20 text-[var(--color-primary)] border border-[var(--color-primary)]/30">{currentTrace.graph.node_count} Nodes</span>
+              <span className="font-[JetBrains_Mono] text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-primary)]/20 text-[var(--color-primary)] border border-[var(--color-primary)]/30">{currentTrace.graph.node_count} {language === 'HI' ? 'नोड्स' : 'Nodes'}</span>
             ) : null}
           </button>
           <button onClick={() => handleTabChange('transactions')} className={tabClass('transactions')}>
-            TRANSACTIONS
+            {language === 'HI' ? 'लेनदेन' : 'TRANSACTIONS'}
             <span className="font-[JetBrains_Mono] text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-surface-container-high)] text-[var(--color-on-surface-variant)] border border-[var(--color-outline)]">{transactions.length}</span>
           </button>
           <button onClick={() => handleTabChange('risk')} className={tabClass('risk')}>
-            RISK
+            {language === 'HI' ? 'जोखिम' : 'RISK'}
           </button>
           <button onClick={() => handleTabChange('patterns')} className={tabClass('patterns')}>
-            PATTERNS
+            {language === 'HI' ? 'पैटर्न' : 'PATTERNS'}
           </button>
           <button onClick={() => handleTabChange('evidence')} className={tabClass('evidence')}>
-            EVIDENCE
+            {language === 'HI' ? 'सबूत' : 'EVIDENCE'}
             <span className="font-[JetBrains_Mono] text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-surface-container-high)] text-[var(--color-on-surface-variant)] border border-[var(--color-outline)]">{evidenceList.length}</span>
           </button>
           <button onClick={() => handleTabChange('copilot')} className={tabClass('copilot')}>
             <span className="text-[var(--color-tertiary)] flex items-center gap-1">
               <Bot className="w-[14px] h-[14px]" />
-              COPILOT AI
+              {language === 'HI' ? 'कोपायलट एआई' : 'COPILOT AI'}
             </span>
           </button>
           <button onClick={() => handleTabChange('report')} className={tabClass('report')}>
-            REPORT
+            {language === 'HI' ? 'रिपोर्ट' : 'REPORT'}
           </button>
         </div>
       </div>
