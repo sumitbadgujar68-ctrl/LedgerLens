@@ -54,7 +54,7 @@ def create_tool_registry(db: AsyncSession) -> ToolRegistry:
         parameters={
             "type": "object",
             "properties": {
-                "case_id": {"type": "string", "format": "uuid", "description": "Case UUID"}
+                "case_id": {"type": "string", "description": "Case UUID"}
             },
             "required": ["case_id"],
         },
@@ -67,8 +67,8 @@ def create_tool_registry(db: AsyncSession) -> ToolRegistry:
         parameters={
             "type": "object",
             "properties": {
-                "case_id": {"type": "string", "format": "uuid", "description": "Case UUID"},
-                "trace_id": {"type": "string", "format": "uuid", "description": "Optional trace UUID"}
+                "case_id": {"type": "string", "description": "Case UUID"},
+                "trace_id": {"type": "string", "description": "Optional trace UUID"}
             },
             "required": ["case_id"],
         },
@@ -81,8 +81,8 @@ def create_tool_registry(db: AsyncSession) -> ToolRegistry:
         parameters={
             "type": "object",
             "properties": {
-                "case_id": {"type": "string", "format": "uuid", "description": "Case UUID"},
-                "trace_id": {"type": "string", "format": "uuid", "description": "Optional trace UUID"},
+                "case_id": {"type": "string", "description": "Case UUID"},
+                "trace_id": {"type": "string", "description": "Optional trace UUID"},
                 "wallet_address": {"type": "string", "description": "Optional wallet address to filter"}
             },
             "required": ["case_id"],
@@ -96,8 +96,8 @@ def create_tool_registry(db: AsyncSession) -> ToolRegistry:
         parameters={
             "type": "object",
             "properties": {
-                "case_id": {"type": "string", "format": "uuid", "description": "Case UUID"},
-                "trace_id": {"type": "string", "format": "uuid", "description": "Optional trace UUID"},
+                "case_id": {"type": "string", "description": "Case UUID"},
+                "trace_id": {"type": "string", "description": "Optional trace UUID"},
                 "wallet_address": {"type": "string", "description": "Optional wallet address to filter"}
             },
             "required": ["case_id"],
@@ -111,8 +111,8 @@ def create_tool_registry(db: AsyncSession) -> ToolRegistry:
         parameters={
             "type": "object",
             "properties": {
-                "case_id": {"type": "string", "format": "uuid", "description": "Case UUID"},
-                "trace_id": {"type": "string", "format": "uuid", "description": "Optional trace UUID"},
+                "case_id": {"type": "string", "description": "Case UUID"},
+                "trace_id": {"type": "string", "description": "Optional trace UUID"},
                 "wallet_address": {"type": "string", "description": "Optional wallet address to filter"}
             },
             "required": ["case_id"],
@@ -126,7 +126,7 @@ def create_tool_registry(db: AsyncSession) -> ToolRegistry:
         parameters={
             "type": "object",
             "properties": {
-                "case_id": {"type": "string", "format": "uuid", "description": "Case UUID"}
+                "case_id": {"type": "string", "description": "Case UUID"}
             },
             "required": ["case_id"],
         },
@@ -139,9 +139,9 @@ def create_tool_registry(db: AsyncSession) -> ToolRegistry:
         parameters={
             "type": "object",
             "properties": {
-                "case_id": {"type": "string", "format": "uuid", "description": "Case UUID"},
-                "trace_id": {"type": "string", "format": "uuid", "description": "Optional trace UUID"},
-                "limit": {"type": "integer", "description": "Maximum number of transactions", "default": 100}
+                "case_id": {"type": "string", "description": "Case UUID"},
+                "trace_id": {"type": "string", "description": "Optional trace UUID"},
+                "limit": {"type": "integer", "description": "Maximum number of transactions"}
             },
             "required": ["case_id"],
         },
@@ -154,7 +154,7 @@ def create_tool_registry(db: AsyncSession) -> ToolRegistry:
         parameters={
             "type": "object",
             "properties": {
-                "case_id": {"type": "string", "format": "uuid", "description": "Case UUID"}
+                "case_id": {"type": "string", "description": "Case UUID"}
             },
             "required": ["case_id"],
         },
