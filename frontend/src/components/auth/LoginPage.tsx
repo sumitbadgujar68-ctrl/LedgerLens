@@ -144,7 +144,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSuccess }) => {
           ACCESS IS RESTRICTED TO AUTHORIZED INVESTIGATORS
         </p>
         <p className="mt-1 text-center font-semibold text-[10px] text-slate-600">
-          SIH 2026 \u00B7 PS SIH26183
+          SIH 2026 {"·"} PS SIH26183
         </p>
       </div>
     </div>
